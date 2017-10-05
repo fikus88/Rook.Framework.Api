@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.6</TargetFramework>
+	  <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="HttpServer\HttpStatusCode.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microlise.MicroService.Core" Version="1.0.0-ci-20171005-140810" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.4" />
+  </ItemGroup>
+
+</Project>
