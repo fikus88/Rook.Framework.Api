@@ -8,7 +8,7 @@ namespace MicroService.Core.Api
 		{
 			int j = 0;
 
-			for (int i = 0; i < candidate.Length - pattern.Length; i++)
+			for (int i = 0; i < candidate.Length; i++)
 			{
 				if (candidate[i].Equals(pattern[j]))
 					j++;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Microlise.MicroService.Core.Common;
 
 namespace MicroService.Core.Api.HttpServer
 {
@@ -15,19 +16,12 @@ namespace MicroService.Core.Api.HttpServer
 		public Dictionary<string, string> RequestHeader { get; } = new Dictionary<string, string>();
 		public JwtSecurityToken SecurityToken { get; private set; }
 		public byte[] Body { get; internal set; }
-		public Dictionary<string, string> Parameters
-		{
-			get
-			{
-				return _parameters;
-			}
-		}
+		public AutoDictionary<string, string> Parameters => _parameters;
 
 		private string _uriPattern;
 
 		public void SetUriPattern(string value)
 		{
-
 			_uriPattern = value;
 			if (_parameters == null && _uriPattern != null)
 			{
@@ -42,7 +36,7 @@ namespace MicroService.Core.Api.HttpServer
 				if (tokens.Length != values.Length)
 					throw new InvalidOperationException("WTF");
 
-				_parameters = new Dictionary<string, string>();
+				_parameters = new AutoDictionary<string, string>();
 
 				for (int i = 0; i < tokens.Length; i++)
 				{
@@ -50,7 +44,7 @@ namespace MicroService.Core.Api.HttpServer
 					if (token.StartsWith("{") && token.EndsWith("}"))
 					{
 						string key = token.Trim('{', '}');
-						_parameters.Add(key, values[i]);
+						_parameters.Add(key, Uri.UnescapeDataString(values[i]));
 					}
 				}
 
@@ -65,14 +59,14 @@ namespace MicroService.Core.Api.HttpServer
 						if (parts.Length == 1)
 							_parameters.Add(parts[0], null);
 						else
-							_parameters.Add(parts[0], parts[1]);
+							_parameters.Add(parts[0], Uri.UnescapeDataString(parts[1]));
 					}
 				}
 			}
 
 		}
 
-		private Dictionary<string, string> _parameters;
+		private AutoDictionary<string, string> _parameters;
 
 		public HttpRequest(byte[] headerBytes)
 		{
@@ -97,13 +91,13 @@ namespace MicroService.Core.Api.HttpServer
 			}
 
 			// Uri
-			Uri = new Uri(RequestHeader["Host"] + Path);
+			Uri = new Uri("http://" + RequestHeader["Host"] + Path);
 
 			// decode JWT
 			if (RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
 			{
 				string payload = RequestHeader["Authorization"].Substring(7);
-				SecurityToken = new JwtSecurityToken(payload);
+				SecurityToken = new JwtSecurityToken(payload);				
 			}
 			else
 			{

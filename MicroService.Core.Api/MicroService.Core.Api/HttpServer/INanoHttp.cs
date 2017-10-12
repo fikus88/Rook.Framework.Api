@@ -1,6 +1,6 @@
 ﻿namespace MicroService.Core.Api.HttpServer
 {
-	internal interface INanoHttp
+	public interface INanoHttp
 	{
 		void Start();
 	}

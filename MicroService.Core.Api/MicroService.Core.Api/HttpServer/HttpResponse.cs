@@ -57,13 +57,25 @@ namespace MicroService.Core.Api.HttpServer
 		{
 			StringBuilder responseString = new StringBuilder();
 			responseString.Append($"HTTP/1.1 {(int)HttpStatusCode} {Enum.GetName(typeof(HttpStatusCode), HttpStatusCode)}\r\n");
-			responseString.Append($"Date: {dateTimeProvider.UtcNow.ToString("F")}\r\n");
-			responseString.Append($"Content-Length: {_content.Length}\r\n");
-			responseString.Append($"Content-Type: application/json\r\n");
+			responseString.Append($"Date: {dateTimeProvider.UtcNow:F}\r\n");
+			if (_content != null)
+			{
+				responseString.Append($"Content-Length: {_content.Length}\r\n");
+				responseString.Append($"Content-Type: application/json\r\n");
+			}
 			responseString.Append($"Connection: Closed\r\n\r\n");
-			byte[] response = new byte[responseString.Length + _content.Length];
-			Array.Copy(Encoding.ASCII.GetBytes(responseString.ToString()), response, responseString.Length);
-			Array.Copy(_content, 0, response, responseString.Length + 1, _content.Length);
+			byte[] response;
+			if (_content != null)
+			{
+				response = new byte[responseString.Length + _content.Length];
+				Array.Copy(Encoding.ASCII.GetBytes(responseString.ToString()), response, responseString.Length);
+				Array.Copy(_content, 0, response, responseString.Length, _content.Length);
+			}
+			else
+			{
+				response = Encoding.ASCII.GetBytes(responseString.ToString());
+			}
+			
 			return response;
 		}
 	}

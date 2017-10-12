@@ -23,7 +23,7 @@ namespace MicroService.Core.Api
 
 		public HttpResponse HandleRequest(HttpRequest request)
 		{
-			IRequestHandler handler = GetRequestHandler(request);
+			IVerbHandler handler = GetRequestHandler(request);
 
 			if (handler == null)
 				return HttpResponse.MethodNotFound;
@@ -36,17 +36,47 @@ namespace MicroService.Core.Api
 			};
 		}
 
-		private IRequestHandler GetRequestHandler(HttpRequest request)
+		private readonly Dictionary<Type, IVerbHandler> singletonCache = new Dictionary<Type, IVerbHandler>();
+
+		private IVerbHandler GetRequestHandler(HttpRequest request)
 		{
-			IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> verbHandlers = (_verbHandlers ?? (_verbHandlers = Container.FindAttributedTypes<VerbHandlerAttribute>())).ToArray();
-			KeyValuePair<Type, VerbHandlerAttribute[]> handlerInfo = verbHandlers.FirstOrDefault(kvp => kvp.Value.Any(v => v.Verb == request.Verb && PathPatternMatches(request.Path, v.Path)));
-			IRequestHandler instance = (IRequestHandler)Activator.CreateInstance(handlerInfo.Key);
-			request.SetUriPattern(handlerInfo.Value.FirstOrDefault(v => v.Verb == request.Verb).Path);
+			bool Predicate(VerbHandlerAttribute attr) => RequestMatchesAttribute(request, attr);
+
+			IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> verbHandlers =
+				(_verbHandlers ?? (_verbHandlers = Container.FindAttributedTypes<VerbHandlerAttribute>())).ToArray();
+
+			KeyValuePair<Type, VerbHandlerAttribute[]> handlerInfo = verbHandlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
+
+			if (handlerInfo.Key == null) return null;
+
+			VerbHandlerAttribute attribute = handlerInfo.Value.First(Predicate);
+
+			request.SetUriPattern(attribute.Path);
+
+			IVerbHandler instance;
+
+			if (attribute.AsSingleton)
+			{
+				if (!singletonCache.ContainsKey(handlerInfo.Key))
+					singletonCache.Add(handlerInfo.Key, (IVerbHandler)Activator.CreateInstance(handlerInfo.Key));
+
+				instance = singletonCache[handlerInfo.Key];
+			}
+			else
+			{
+				instance = (IVerbHandler)Activator.CreateInstance(handlerInfo.Key);
+			}
+
 			return instance;
 		}
 
-		private bool PathPatternMatches(string path, string pattern)
+		private bool RequestMatchesAttribute(HttpRequest request, VerbHandlerAttribute attribute)
 		{
+			if (request.Verb != attribute.Verb) return false;
+
+			string pattern = attribute.Path;
+			string path = request.Path;
+
 			string[] pathParts = path.Split('?');
 
 			string[] tokens = pattern.Split('/');

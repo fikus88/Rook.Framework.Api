@@ -3,7 +3,7 @@ using System.Net;
 
 namespace Microlise.MicroService.Core.Api
 {
-    public interface IRequestHandler
+    public interface IVerbHandler
     {
         HttpStatusCode Handle(HttpRequest request, out object responseData);
     }

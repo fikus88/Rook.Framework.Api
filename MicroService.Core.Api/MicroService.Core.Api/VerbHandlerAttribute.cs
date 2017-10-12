@@ -7,13 +7,14 @@ namespace MicroService.Core.Api
 {
 	public sealed class VerbHandlerAttribute : Attribute
 	{
-				public VerbHandlerAttribute(HttpVerb verb, string path)
+		public VerbHandlerAttribute(HttpVerb verb, string path)
 		{
 			Verb = verb;
 			Path = path;
 		}
-
+				
 		public HttpVerb Verb { get; }
 		public string Path { get; }
+		public bool AsSingleton { get; set; }
 	}
 }

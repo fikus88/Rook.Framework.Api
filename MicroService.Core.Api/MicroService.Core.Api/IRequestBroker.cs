@@ -2,7 +2,7 @@
 
 namespace MicroService.Core.Api
 {
-	internal interface IRequestBroker
+	public interface IRequestBroker
 	{
 		HttpResponse HandleRequest(HttpRequest header);
 	}

@@ -7,7 +7,7 @@ using System;
 
 namespace Microlise.MicroService.Core.Api
 {
-    public class ResponseHandler : IRequestHandler
+    public class ResponseHandler : IVerbHandler
     {
         private readonly IRequestStore _requestStore;
         private readonly ILogger _logger;
