@@ -1,7 +1,5 @@
-﻿using Microlise.MicroService.Core.Api;
-using System;
+﻿using System;
 using Microlise.MicroService.Core.Api.HttpServer;
-using System.Net;
 
 namespace Microlise.MicroService.Core.Api
 {

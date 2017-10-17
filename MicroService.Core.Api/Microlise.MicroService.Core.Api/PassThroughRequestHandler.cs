@@ -34,9 +34,7 @@ namespace Microlise.MicroService.Core.Api
 
 			string port = (Environment.GetEnvironmentVariable("CURRENT_PORT") ?? (request.Uri.Port).ToString());
 
-			var callBackUrl = $"{request.Uri.Scheme}://{request.Uri.Host}:{port}";
-
-			return _requestStore.PublishAndWaitForResponse(callBackUrl, message, SuccessStatusCode, out responseData);
+			return _requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, out responseData);
 		}
 	}
 }

@@ -11,15 +11,10 @@ namespace ExampleAPI
     {
 		static void Main()
 		{
-			Container.Scan(Assembly.GetEntryAssembly(), typeof(IService).GetTypeInfo().Assembly);
+			Container.Scan(Assembly.GetEntryAssembly(), typeof(IApiService).GetTypeInfo().Assembly, typeof(IService).GetTypeInfo().Assembly);
 
-			IService instance = Container.GetInstance<IService>();
-			INanoHttp httpServer = Container.GetInstance<INanoHttp>();
-
-			Thread.CurrentThread.Name = $"{instance.ServiceName} Main Thread";
-
-			instance.Start();
-			httpServer.Start();
+			IApiService apiService = Container.GetInstance<IApiService>();
+			apiService.Start();
 
 #if NETCOREAPP2_0
             AppDomain.CurrentDomain.ProcessExit += (s, e) => instance.Stop();

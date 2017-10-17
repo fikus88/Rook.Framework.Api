@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microlise.MicroService.Core.Common;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -13,10 +14,15 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 		Task allocator;
 		readonly TaskFactory processorFactory = new TaskFactory();
 		private readonly IRequestBroker requestBroker;
+		private readonly IConfigurationManager configurationManager;
+		private readonly bool requiresAuthorisation;
 
-		public NanoHttp(IRequestBroker requestBroker)
+
+		public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager)
 		{
 			this.requestBroker = requestBroker;
+			this.configurationManager = configurationManager;
+			requiresAuthorisation = string.Equals(configurationManager.AppSettings["RequiresAuthorisation"], "true", StringComparison.OrdinalIgnoreCase);
 		}
 
 		public void Start()
@@ -26,7 +32,6 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
 			allocator = new Task(AllocationMain);
 			allocator.Start();
-			Console.WriteLine("NanoHttp started");
 		}
 
 		private void AllocationMain()
@@ -34,9 +39,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			while (true)
 			{
 				while (!listener.Pending()) { Thread.Sleep(1); }
-				Console.Write("Incoming connection...");
 				Socket s = listener.AcceptSocketAsync().Result;
-				Console.WriteLine(" ... from " + ((IPEndPoint) s.RemoteEndPoint).Address);
 				processorFactory.StartNew(() => Processor(s));
 			}
 		}
@@ -60,7 +63,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 					Console.WriteLine(Encoding.ASCII.GetString(received));
 
 					int i;
-					if ((i = received.FindPattern((byte) 13, (byte) 10, (byte) 13, (byte) 10)) > 0)
+					if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) > 0)
 					{
 						request = new HttpRequest(received.SubArray(i));
 						if (request.RequestHeader.ContainsKey("Content-Length"))
@@ -72,7 +75,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 						else
 							content = new byte[0];
 
-						if (request.SecurityToken != null)
+						if (requiresAuthorisation && request.SecurityToken == null)
 						{
 							s.Shutdown(SocketShutdown.Both);
 							s.Dispose();

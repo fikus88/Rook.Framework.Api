@@ -7,6 +7,7 @@ namespace Microlise.MicroService.Core.Api
     {
         Func<Guid> CreateUniqueId { get; set; }
         bool FindResponse(Guid requestId, object data);
-        HttpStatusCode PublishAndWaitForResponse(string baseAddress, dynamic message, HttpStatusCode successResponseCode, out object responseData);
+        HttpStatusCode PublishAndWaitForResponse(dynamic message, HttpStatusCode successResponseCode, out object responseData);
+	    void Start();
     }
 }
