@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MicroService.Core.Api.HttpServer
+namespace Microlise.MicroService.Core.Api.HttpServer
 {
 	public class NanoHttp : INanoHttp
 	{

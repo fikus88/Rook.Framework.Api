@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MicroService.Core.Api
+namespace Microlise.MicroService.Core.Api
 {
 	internal static class ExtensionMethods
 	{

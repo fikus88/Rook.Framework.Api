@@ -1,4 +1,4 @@
-﻿namespace MicroService.Core.Api.HttpServer
+﻿namespace Microlise.MicroService.Core.Api.HttpServer
 {
 	public enum HttpVerb
 	{

@@ -1,9 +1,9 @@
 ﻿using Microlise.MicroService.Core.Api;
 using System;
-using MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api.HttpServer;
 using System.Net;
 
-namespace MicroService.Core.Api
+namespace Microlise.MicroService.Core.Api
 {
 	public sealed class VerbHandlerAttribute : Attribute
 	{

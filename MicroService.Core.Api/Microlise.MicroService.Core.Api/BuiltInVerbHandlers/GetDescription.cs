@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using Microlise.MicroService.Core.Api;
 using Microlise.MicroService.Core.IoC;
-using MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api.HttpServer;
 
-namespace MicroService.Core.Api.BuiltInVerbHandlers {
+namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers {
 	[VerbHandler(HttpVerb.Get, "description", "Describes the API based on descriptions provided in the VerbHandlerAttribute constructor for each VerbHandler class")]
 	internal class GetDescription : IVerbHandler
 	{

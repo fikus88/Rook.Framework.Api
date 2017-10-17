@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MicroService.Core.Api\MicroService.Core.Api.csproj" />
+    <ProjectReference Include="..\Microlise.MicroService.Core.Api\Microlise.MicroService.Core.Api.csproj" />
   </ItemGroup>
 
 </Project>

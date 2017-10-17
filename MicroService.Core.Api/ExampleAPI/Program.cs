@@ -2,8 +2,8 @@
 using System.Threading;
 using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Services;
-using MicroService.Core.Api;
-using MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api;
+using Microlise.MicroService.Core.Api.HttpServer;
 
 namespace ExampleAPI
 {

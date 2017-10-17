@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Microlise.MicroService.Core.Common;
 using System.Net;
-using MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api.HttpServer;
 using System;
 
 namespace Microlise.MicroService.Core.Api

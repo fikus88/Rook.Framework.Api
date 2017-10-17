@@ -1,5 +1,5 @@
 ﻿using Microlise.MicroService.Core.Api;
-using MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api.HttpServer;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microlise.MicroService.Core.Common;
 
-namespace MicroService.Core.Api
+namespace Microlise.MicroService.Core.Api
 {
 	internal class RequestBroker : IRequestBroker
 	{

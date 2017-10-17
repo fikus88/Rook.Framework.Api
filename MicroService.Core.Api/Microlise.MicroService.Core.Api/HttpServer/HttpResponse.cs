@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace MicroService.Core.Api.HttpServer
+namespace Microlise.MicroService.Core.Api.HttpServer
 {
 	public sealed class HttpResponse
 	{

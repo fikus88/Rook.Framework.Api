@@ -1,4 +1,4 @@
-﻿using MicroService.Core.Api.HttpServer;
+﻿using Microlise.MicroService.Core.Api.HttpServer;
 using System.Net;
 
 namespace Microlise.MicroService.Core.Api

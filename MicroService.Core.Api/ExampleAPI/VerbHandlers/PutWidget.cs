@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Microlise.MicroService.Core.Api;
-using MicroService.Core.Api;
-using MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api.HttpServer;
 
 namespace ExampleAPI.VerbHandlers {
 	[VerbHandler(HttpVerb.Put, "/widget/{widgetId}")]

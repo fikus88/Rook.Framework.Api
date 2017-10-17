@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microlise.MicroService.Core.Common;
 
-namespace MicroService.Core.Api.HttpServer
+namespace Microlise.MicroService.Core.Api.HttpServer
 {
 	public class HttpRequest
 	{
