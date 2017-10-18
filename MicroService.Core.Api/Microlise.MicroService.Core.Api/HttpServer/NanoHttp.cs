@@ -2,7 +2,6 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,19 +13,32 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 		private Task allocator;
 		private readonly TaskFactory processorFactory = new TaskFactory();
 		private readonly IRequestBroker requestBroker;
+		private readonly ILogger logger;
 		private readonly bool requiresAuthorisation;
+		private readonly int port;
+		private readonly int backlog;
 
-
-		public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager)
+		public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager, ILogger logger)
 		{
 			this.requestBroker = requestBroker;
+			this.logger = logger;
+
 			requiresAuthorisation = string.Equals(configurationManager.AppSettings["RequiresAuthorisation"], "true", StringComparison.OrdinalIgnoreCase);
+
+			if (!int.TryParse(configurationManager.AppSettings["Port"], out port))
+				port = 80;
+
+			if (!int.TryParse(configurationManager.AppSettings["Backlog"], out backlog))
+				backlog = 16;
+
 		}
 
 		public void Start()
 		{
-			listener = new TcpListener(new IPEndPoint(IPAddress.Any, 80));
-			listener.Start(16);
+			listener = new TcpListener(new IPEndPoint(IPAddress.Any, port));
+			listener.Start(backlog);
+
+			logger.Info(nameof(Start), new LogItem("Information", "Listener started"), new LogItem("Port", port), new LogItem("Backlog", backlog));
 
 			allocator = new Task(AllocationMain);
 			allocator.Start();
