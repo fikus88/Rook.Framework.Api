@@ -24,7 +24,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 				HttpResponse value = new HttpResponse(Container.GetInstance<IDateTimeProvider>())
 				{
 					HttpStatusCode = HttpStatusCode.NotFound,
-					_content = null
+					Content = null
 				};
 				return value;
 			}
@@ -33,7 +33,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
 		public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
-		public byte[] _content;
+		public byte[] Content;
 
 		/// <summary>
 		/// Sets ASCII string content from a C# string (could be unicode)
@@ -41,7 +41,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 		/// <param name="content"></param>
 		public void SetStringContent(string content)
 		{
-			_content = Encoding.ASCII.GetBytes(content);
+			Content = Encoding.ASCII.GetBytes(content);
 		}
 
 		/// <summary>
@@ -50,7 +50,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 		/// <param name="content"></param>
 		public void SetObjectContent(object content)
 		{
-			_content = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content));
+			Content = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content));
 		}
 
 		internal byte[] ToByteArray()
@@ -58,18 +58,18 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			StringBuilder responseString = new StringBuilder();
 			responseString.Append($"HTTP/1.1 {(int)HttpStatusCode} {Enum.GetName(typeof(HttpStatusCode), HttpStatusCode)}\r\n");
 			responseString.Append($"Date: {dateTimeProvider.UtcNow:F}\r\n");
-			if (_content != null)
+			if (Content != null)
 			{
-				responseString.Append($"Content-Length: {_content.Length}\r\n");
-				responseString.Append($"Content-Type: application/json\r\n");
+				responseString.Append($"Content-Length: {Content.Length}\r\n");
+				responseString.Append("Content-Type: application/json\r\n");
 			}
-			responseString.Append($"Connection: Closed\r\n\r\n");
+			responseString.Append("Connection: Closed\r\n\r\n");
 			byte[] response;
-			if (_content != null)
+			if (Content != null)
 			{
-				response = new byte[responseString.Length + _content.Length];
+				response = new byte[responseString.Length + Content.Length];
 				Array.Copy(Encoding.ASCII.GetBytes(responseString.ToString()), response, responseString.Length);
-				Array.Copy(_content, 0, response, responseString.Length, _content.Length);
+				Array.Copy(Content, 0, response, responseString.Length, Content.Length);
 			}
 			else
 			{

@@ -8,35 +8,35 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 {
 	public class HttpRequest
 	{
-		public Uri Uri { get; private set; }
+		public Uri Uri { get; }
 
-		public HttpVerb Verb { get; private set; }
-		public string Path { get; private set; }
-		public string HttpVersion { get; private set; }
-		public Dictionary<string, string> RequestHeader { get; } = new Dictionary<string, string>();
-		public JwtSecurityToken SecurityToken { get; private set; }
+		public HttpVerb Verb { get; }
+		public string Path { get; }
+		public string HttpVersion { get; }
+		public AutoDictionary<string, string> RequestHeader { get; } = new AutoDictionary<string, string>();
+		public JwtSecurityToken SecurityToken { get; }
 		public byte[] Body { get; internal set; }
-		public AutoDictionary<string, string> Parameters => _parameters;
+		public AutoDictionary<string, string> Parameters { get; private set; }
 
-		private string _uriPattern;
+		private string uriPattern;
 
 		public void SetUriPattern(string value)
 		{
-			_uriPattern = value;
-			if (_parameters == null && _uriPattern != null)
+			uriPattern = value;
+			if (Parameters == null && uriPattern != null)
 			{
 				string[] pathParts = Path.Split('?');
 
 				// parse UriPattern
 				// UriPattern will be like:
 				// "/rest/{version}/driver/{driverId}"
-				string[] tokens = _uriPattern.Split('/');
-				string[] values = pathParts[0].Split('/');
+				string[] tokens = uriPattern.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+				string[] values = pathParts[0].Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
 				if (tokens.Length != values.Length)
 					throw new InvalidOperationException("WTF");
 
-				_parameters = new AutoDictionary<string, string>();
+				Parameters = new AutoDictionary<string, string>();
 
 				for (int i = 0; i < tokens.Length; i++)
 				{
@@ -44,7 +44,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 					if (token.StartsWith("{") && token.EndsWith("}"))
 					{
 						string key = token.Trim('{', '}');
-						_parameters.Add(key, Uri.UnescapeDataString(values[i]));
+						Parameters.Add(key, Uri.UnescapeDataString(values[i]));
 					}
 				}
 
@@ -56,17 +56,12 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 					foreach (string parameter in parameters)
 					{
 						string[] parts = parameter.Split('=');
-						if (parts.Length == 1)
-							_parameters.Add(parts[0], null);
-						else
-							_parameters.Add(parts[0], Uri.UnescapeDataString(parts[1]));
+						if (parts.Length > 1) Parameters.Add(parts[0], Uri.UnescapeDataString(parts[1]));
 					}
 				}
 			}
 
 		}
-
-		private AutoDictionary<string, string> _parameters;
 
 		public HttpRequest(byte[] headerBytes)
 		{
@@ -97,12 +92,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			if (RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
 			{
 				string payload = RequestHeader["Authorization"].Substring(7);
-				SecurityToken = new JwtSecurityToken(payload);				
-			}
-			else
-			{
-				// check if configuration mandates security
-				// if so, throw a wobbly
+				SecurityToken = new JwtSecurityToken(payload);
 			}
 		}
 	}

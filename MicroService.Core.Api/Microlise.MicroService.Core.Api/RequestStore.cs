@@ -10,8 +10,8 @@ using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.ResponseHandlers;
 using System.Net;
 using System.Threading.Tasks;
+using Microlise.Microservice.Core.Api;
 using Microlise.MicroService.Core.Data;
-using Microlise.Microservice.Core.Api.MessageHandlers;
 using MongoDB.Driver;
 
 namespace Microlise.MicroService.Core.Api
@@ -20,11 +20,11 @@ namespace Microlise.MicroService.Core.Api
 	{
 		private const int MaxTimeToWaitForBusResponseInMilliseconds = 5000;
 
-		private readonly IQueueWrapper _queueWrapper;
+		private readonly IQueueWrapper queueWrapper;
 
-		private readonly ILogger _logger;
+		private readonly ILogger logger;
 		private readonly IMongoStore mongo;
-		private readonly IDateTimeProvider _dateTimeProvider;
+		private readonly IDateTimeProvider dateTimeProvider;
 
 		public RequestStore(
 			IDateTimeProvider dateTimeProvider,
@@ -32,10 +32,10 @@ namespace Microlise.MicroService.Core.Api
 			ILogger logger,
 			IMongoStore mongo)
 		{
-			_queueWrapper = queueWrapper;
-			_logger = logger;
+			this.queueWrapper = queueWrapper;
+			this.logger = logger;
 			this.mongo = mongo;
-			_dateTimeProvider = dateTimeProvider;
+			this.dateTimeProvider = dateTimeProvider;
 		}
 
 		public static readonly ConcurrentDictionary<Guid, DataWaitHandle<object>> RequestsStore = new ConcurrentDictionary<Guid, DataWaitHandle<object>>();
@@ -48,9 +48,9 @@ namespace Microlise.MicroService.Core.Api
 
 			message.Uuid = requestId;
 			message.LastModifiedBy = Service.GetServiceName();
-			message.LastModifiedTime = _dateTimeProvider.UtcNow;
+			message.LastModifiedTime = dateTimeProvider.UtcNow;
 
-			_logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
+			logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
 
 			MessageWrapper placeholder = new MessageWrapper { Uuid = message.Uuid };
 			mongo.Put(placeholder);
@@ -59,7 +59,7 @@ namespace Microlise.MicroService.Core.Api
 			{
 				if (RequestsStore.TryAdd(requestId, dataWaitHandle))
 				{
-					_queueWrapper.PublishMessage(message);
+					queueWrapper.PublishMessage(message);
 
 					DataWaitHandle<object> dataWaitHandleFromRemove;
 
@@ -69,7 +69,7 @@ namespace Microlise.MicroService.Core.Api
 
 						var completedMessage = ((JObject)dataWaitHandle.Data).ToObject<Message<object, object>>();
 
-						_logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{completedMessage}\"");
+						logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{completedMessage}\"");
 
 						if (completedMessage.Errors.Any())
 						{
@@ -88,14 +88,31 @@ namespace Microlise.MicroService.Core.Api
 					RequestsStore.TryRemove(requestId, out dataWaitHandleFromRemove);
 
 					responseData = "Failed to get a response from the bus";
-					_logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
+					logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
 					return HttpStatusCode.RequestTimeout;
 				}
 			}
 
 			responseData = "Failed to publish request to the bus";
-			_logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Failed to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
+			logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Failed to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
 			return HttpStatusCode.InternalServerError;
+		}
+
+		public bool FindResponse(Guid requestId, object data)
+		{
+			bool idFound = RequestsStore.TryGetValue(requestId, out DataWaitHandle<object> dataWaitHandle);
+
+			if (idFound)
+			{
+				logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{requestId}\" Data=\"{data}\"");
+				dataWaitHandle.Set(data);
+			}
+			else
+			{
+				logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Could not find Id in requests store\" MessageId=\"{requestId}\" Data=\"{data}\"");
+			}
+
+			return idFound;
 		}
 
 		private Task waitLoopTask;
@@ -106,26 +123,9 @@ namespace Microlise.MicroService.Core.Api
 			waitLoopTask.Start();
 		}
 
-		public bool FindResponse(Guid requestId, object data)
+		private void WaitLoop()
 		{
-			bool idFound = RequestsStore.TryGetValue(requestId, out DataWaitHandle<object> dataWaitHandle);
-
-			if (idFound)
-			{
-				_logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{requestId}\" Data=\"{data}\"");
-				dataWaitHandle.Set(data);
-			}
-			else
-			{
-				_logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Could not find Id in requests store\" MessageId=\"{requestId}\" Data=\"{data}\"");
-			}
-
-			return idFound;
-		}
-
-		public void WaitLoop()
-		{
-			IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
+			IMongoCollection<MessageWrapper> collection = mongo.GetCappedCollection<MessageWrapper>();
 			FindOptions<MessageWrapper> options = new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait };
 
 			while (true)
@@ -141,6 +141,5 @@ namespace Microlise.MicroService.Core.Api
 				}
 			}
 		}
-
 	}
 }

@@ -1,5 +1,4 @@
-﻿using Microlise.MicroService.Core.Api;
-using Microlise.MicroService.Core.Api.HttpServer;
+﻿using Microlise.MicroService.Core.Api.HttpServer;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
@@ -13,7 +12,7 @@ namespace Microlise.MicroService.Core.Api
 {
 	internal class RequestBroker : IRequestBroker
 	{
-		private IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> _verbHandlers = null;
+		private IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> verbHandlers;
 		private readonly IDateTimeProvider dateTimeProvider;
 
 		public RequestBroker(IDateTimeProvider dateTimeProvider)
@@ -32,7 +31,7 @@ namespace Microlise.MicroService.Core.Api
 			return new HttpResponse(dateTimeProvider)
 			{
 				HttpStatusCode = statusCode,
-				_content = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(content))
+				Content = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(content))
 			};
 		}
 
@@ -42,10 +41,10 @@ namespace Microlise.MicroService.Core.Api
 		{
 			bool Predicate(VerbHandlerAttribute attr) => RequestMatchesAttribute(request, attr);
 
-			IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> verbHandlers =
-				(_verbHandlers ?? (_verbHandlers = Container.FindAttributedTypes<VerbHandlerAttribute>())).ToArray();
+			IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> handlers =
+				(verbHandlers ?? (verbHandlers = Container.FindAttributedTypes<VerbHandlerAttribute>())).ToArray();
 
-			KeyValuePair<Type, VerbHandlerAttribute[]> handlerInfo = verbHandlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
+			KeyValuePair<Type, VerbHandlerAttribute[]> handlerInfo = handlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
 
 			if (handlerInfo.Key == null) return null;
 
@@ -77,10 +76,10 @@ namespace Microlise.MicroService.Core.Api
 			string pattern = attribute.Path;
 			string path = request.Path;
 
-			string[] pathParts = path.Split('?');
+			string[] pathParts = path.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries);
 
-			string[] tokens = pattern.Split('/');
-			string[] values = pathParts[0].Split('/');
+			string[] tokens = pattern.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+			string[] values = pathParts[0].Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
 			if (tokens.Length != values.Length) return false;
 

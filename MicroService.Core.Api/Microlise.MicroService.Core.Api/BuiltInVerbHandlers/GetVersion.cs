@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Net;
-using Microlise.MicroService.Core.Api;
+﻿using System.Net;
 using Microlise.MicroService.Core.Services;
 using Microlise.MicroService.Core.Api.HttpServer;
 

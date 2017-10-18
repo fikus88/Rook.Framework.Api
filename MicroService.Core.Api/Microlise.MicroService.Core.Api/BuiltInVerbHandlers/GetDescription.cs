@@ -4,7 +4,8 @@ using System.Net;
 using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Api.HttpServer;
 
-namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers {
+namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
+{
 	[VerbHandler(HttpVerb.Get, "description", "Describes the API based on descriptions provided in the VerbHandlerAttribute constructor for each VerbHandler class")]
 	internal class GetDescription : IVerbHandler
 	{
@@ -19,7 +20,7 @@ namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers {
 					handlerInfoList.Add(new
 					{
 						path = attribute.Path,
-						verb = attribute.Verb,
+						verb = attribute.Verb.ToString(),
 						description = attribute.Description
 					});
 				}

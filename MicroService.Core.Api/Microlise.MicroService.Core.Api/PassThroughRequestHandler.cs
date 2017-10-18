@@ -13,28 +13,26 @@ namespace Microlise.MicroService.Core.Api
 		protected abstract string Method { get; }
 		protected abstract HttpStatusCode SuccessStatusCode { get; }
 
-		private readonly IRequestStore _requestStore;
+		private readonly IRequestStore requestStore;
 
 		protected PassThroughVerbHandler(IRequestStore requestStore)
 		{
-			_requestStore = requestStore;
+			this.requestStore = requestStore;
 		}
 
 		public virtual HttpStatusCode Handle(HttpRequest request, out object responseData)
 		{
 			byte[] buffer = request.Body;
-			var need = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(buffer));
+			object need = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(buffer));
 
-			var message = new Message<dynamic, object>
+			Message<dynamic, object> message = new Message<dynamic, object>
 			{
 				Source = Service.GetServiceName(),
 				Method = Method,
 				Need = need ?? new { }
 			};
 
-			string port = (Environment.GetEnvironmentVariable("CURRENT_PORT") ?? (request.Uri.Port).ToString());
-
-			return _requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, out responseData);
+			return requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, out responseData);
 		}
 	}
 }

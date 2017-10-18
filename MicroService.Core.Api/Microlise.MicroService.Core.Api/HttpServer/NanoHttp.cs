@@ -10,18 +10,16 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 {
 	public class NanoHttp : INanoHttp
 	{
-		TcpListener listener;
-		Task allocator;
-		readonly TaskFactory processorFactory = new TaskFactory();
+		private TcpListener listener;
+		private Task allocator;
+		private readonly TaskFactory processorFactory = new TaskFactory();
 		private readonly IRequestBroker requestBroker;
-		private readonly IConfigurationManager configurationManager;
 		private readonly bool requiresAuthorisation;
 
 
 		public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager)
 		{
 			this.requestBroker = requestBroker;
-			this.configurationManager = configurationManager;
 			requiresAuthorisation = string.Equals(configurationManager.AppSettings["RequiresAuthorisation"], "true", StringComparison.OrdinalIgnoreCase);
 		}
 
@@ -53,15 +51,13 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
 			while (true)
 			{
-				while (s.Available == 0) Thread.Sleep(10);
+				while (s.Available == 0) Thread.Sleep(1);
 
 				int bytesReceived = s.Receive(buffer);
 				byte[] received = new byte[bytesReceived];
 				Array.Copy(buffer, 0, received, 0, bytesReceived);
 				if (request == null)
 				{
-					Console.WriteLine(Encoding.ASCII.GetString(received));
-
 					int i;
 					if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) > 0)
 					{
