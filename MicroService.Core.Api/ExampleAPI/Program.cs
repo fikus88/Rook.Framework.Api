@@ -1,17 +1,20 @@
 ﻿using System.Reflection;
 using System.Threading;
+using Microlise.MicroService.Core.Api;
 using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Services;
-using Microlise.MicroService.Core.Api;
-using Microlise.MicroService.Core.Api.HttpServer;
 
-namespace ExampleAPI
+namespace Microlise.Example.ExampleAPI
 {
-    public static class Program
+    internal static class Program
     {
-		static void Main()
+	    private static void Main()
 		{
+#if NETCOREAPP2_0
+            Container.Scan(Assembly.GetEntryAssembly(), typeof(IApiService).Assembly, typeof(IService).Assembly);
+#else
 			Container.Scan(Assembly.GetEntryAssembly(), typeof(IApiService).GetTypeInfo().Assembly, typeof(IService).GetTypeInfo().Assembly);
+#endif
 
 			IApiService apiService = Container.GetInstance<IApiService>();
 			apiService.Start();

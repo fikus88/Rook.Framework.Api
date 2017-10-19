@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microlise.MicroService.Core.Api", "Microlise.MicroService.Core.Api\Microlise.MicroService.Core.Api.csproj", "{D4879980-32FE-402E-AA73-F7CEB60B9F0B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExampleAPI", "ExampleAPI\ExampleAPI.csproj", "{028B0D06-BE6C-491B-AF94-6BA0895C5B25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microlise.Example.ExampleAPI", "ExampleAPI\Microlise.Example.ExampleAPI.csproj", "{028B0D06-BE6C-491B-AF94-6BA0895C5B25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

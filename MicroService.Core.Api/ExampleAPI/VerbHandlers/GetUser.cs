@@ -1,16 +1,14 @@
-﻿using System.Net;
-using Microlise.MicroService.Core.Api;
+﻿using Microlise.MicroService.Core.Api;
 using Microlise.MicroService.Core.Api.HttpServer;
 
-namespace ExampleAPI.VerbHandlers
+namespace Microlise.Example.ExampleAPI.VerbHandlers
 {
 	[VerbHandler(HttpVerb.Get, "/user/{userId}")]
 	internal class GetUser : IVerbHandler
 	{
-		public HttpStatusCode Handle(HttpRequest request, out object responseData)
+		public void Handle(HttpRequest request, HttpResponse response)
 		{
-			responseData = new { userId = int.Parse(request.Parameters["userId"]), userName = request.Parameters["name"] };
-			return HttpStatusCode.OK;
+			response.SetObjectContent(new { userId = int.Parse(request.Parameters["userId"]), userName = request.Parameters["name"] });
 		}
 	}
 }

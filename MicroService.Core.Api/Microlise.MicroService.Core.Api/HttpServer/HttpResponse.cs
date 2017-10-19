@@ -29,11 +29,17 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 				return value;
 			}
 		}
-		public HttpStatusCode HttpStatusCode { get; set; }
+
+		public HttpStatusCode HttpStatusCode { get; set; } = HttpStatusCode.OK;
 
 		public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
 		public byte[] Content;
+
+		/// <summary>
+		/// It is not necessary to set this field. Default is application/json
+		/// </summary>
+		public string ContentType;
 
 		/// <summary>
 		/// Sets ASCII string content from a C# string (could be unicode)
@@ -61,7 +67,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			if (Content != null)
 			{
 				responseString.Append($"Content-Length: {Content.Length}\r\n");
-				responseString.Append("Content-Type: application/json\r\n");
+				responseString.Append($"Content-Type: {ContentType ?? "application/json"}\r\n");
 			}
 			responseString.Append("Connection: Closed\r\n\r\n");
 			byte[] response;
@@ -75,7 +81,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			{
 				response = Encoding.ASCII.GetBytes(responseString.ToString());
 			}
-			
+
 			return response;
 		}
 	}

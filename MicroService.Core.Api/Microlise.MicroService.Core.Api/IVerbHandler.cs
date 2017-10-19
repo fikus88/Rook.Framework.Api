@@ -5,6 +5,6 @@ namespace Microlise.MicroService.Core.Api
 {
     public interface IVerbHandler
     {
-        HttpStatusCode Handle(HttpRequest request, out object responseData);
+        void Handle(HttpRequest request, HttpResponse response);
     }
 }

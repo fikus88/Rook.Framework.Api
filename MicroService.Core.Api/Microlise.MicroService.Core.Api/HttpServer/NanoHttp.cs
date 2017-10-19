@@ -1,5 +1,6 @@
 ﻿using Microlise.MicroService.Core.Common;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 		private readonly bool requiresAuthorisation;
 		private readonly int port;
 		private readonly int backlog;
+		private readonly int requestTimeout;
 
 		public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager, ILogger logger)
 		{
@@ -31,6 +33,9 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			if (!int.TryParse(configurationManager.AppSettings["Backlog"], out backlog))
 				backlog = 16;
 
+			if (!int.TryParse(configurationManager.AppSettings["RequestTimeout"], out requestTimeout))
+				requestTimeout = 500;
+
 		}
 
 		public void Start()
@@ -38,7 +43,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			listener = new TcpListener(new IPEndPoint(IPAddress.Any, port));
 			listener.Start(backlog);
 
-			logger.Info(nameof(Start), new LogItem("Information", "Listener started"), new LogItem("Port", port), new LogItem("Backlog", backlog));
+			logger.Info($"{nameof(NanoHttp)}.{nameof(Start)}", new LogItem("Event", "Listener started"), new LogItem("Port", port), new LogItem("Backlog", backlog));
 
 			allocator = new Task(AllocationMain);
 			allocator.Start();
@@ -50,6 +55,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			{
 				while (!listener.Pending()) { Thread.Sleep(1); }
 				Socket s = listener.AcceptSocketAsync().Result;
+				logger.Trace($"{nameof(NanoHttp)}.{nameof(AllocationMain)}", new LogItem("Event", "Accepted socket"), new LogItem("Client", s.RemoteEndPoint.ToString));
 				processorFactory.StartNew(() => Processor(s));
 			}
 		}
@@ -61,9 +67,19 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			int contentOffset = 0;
 			HttpRequest request = null;
 
+			Stopwatch connectionTimer = Stopwatch.StartNew();
+
 			while (true)
 			{
-				while (s.Available == 0) Thread.Sleep(1);
+				while (s.Available == 0 && connectionTimer.ElapsedMilliseconds < requestTimeout) Thread.Sleep(1);
+
+				if (s.Available == 0)
+				{
+					s.Shutdown(SocketShutdown.Both);
+					s.Dispose();
+					logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", $"No request received in {requestTimeout}ms"));
+					return;
+				}
 
 				int bytesReceived = s.Receive(buffer);
 				byte[] received = new byte[bytesReceived];
@@ -74,6 +90,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 					if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) > 0)
 					{
 						request = new HttpRequest(received.SubArray(i));
+						logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Received request"), new LogItem("Verb", request.Verb.ToString), new LogItem("Path", request.Path));
 						if (request.RequestHeader.ContainsKey("Content-Length"))
 						{
 							content = new byte[int.Parse(request.RequestHeader["Content-Length"])];
@@ -87,6 +104,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 						{
 							s.Shutdown(SocketShutdown.Both);
 							s.Dispose();
+							logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", "Authorisation required, but no token provided"));
 							return;
 						}
 						received = new byte[0];
@@ -100,7 +118,10 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 					if (contentOffset >= content.Length - 1)
 					{
 						request.Body = content;
+						logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest started"));
+						Stopwatch responseTimer = Stopwatch.StartNew();
 						HttpResponse response = requestBroker.HandleRequest(request);
+						logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest completed"), new LogItem("DurationMilliseconds", responseTimer.Elapsed.TotalMilliseconds));
 
 						response.Headers.Add("Access-Control-Allow-Origin", "*");
 						response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT");
@@ -109,6 +130,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 						s.Send(response.ToByteArray());
 						s.Shutdown(SocketShutdown.Both);
 						s.Dispose();
+						logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", "Response complete"));
 						return;
 					}
 				}

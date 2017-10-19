@@ -9,7 +9,7 @@ namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
 	[VerbHandler(HttpVerb.Get, "description", "Describes the API based on descriptions provided in the VerbHandlerAttribute constructor for each VerbHandler class")]
 	internal class GetDescription : IVerbHandler
 	{
-		public HttpStatusCode Handle(HttpRequest request, out object responseData)
+		public void Handle(HttpRequest request, HttpResponse response)
 		{
 			Dictionary<Type, VerbHandlerAttribute[]> handlers = Container.FindAttributedTypes<VerbHandlerAttribute>();
 			List<object> handlerInfoList = new List<object>();
@@ -25,8 +25,7 @@ namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
 					});
 				}
 			}
-			responseData = handlerInfoList;
-			return HttpStatusCode.OK;
+			response.SetObjectContent(handlerInfoList);
 		}
 	}
 }

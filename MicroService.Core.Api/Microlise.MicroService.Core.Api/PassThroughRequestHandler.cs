@@ -20,7 +20,7 @@ namespace Microlise.MicroService.Core.Api
 			this.requestStore = requestStore;
 		}
 
-		public virtual HttpStatusCode Handle(HttpRequest request, out object responseData)
+		public virtual void Handle(HttpRequest request, HttpResponse response)
 		{
 			byte[] buffer = request.Body;
 			object need = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(buffer));
@@ -32,7 +32,7 @@ namespace Microlise.MicroService.Core.Api
 				Need = need ?? new { }
 			};
 
-			return requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, out responseData);
+			requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, response);
 		}
 	}
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System;
 using Microlise.MicroService.Core.IoC;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microlise.MicroService.Core.Common;
 
@@ -14,25 +15,30 @@ namespace Microlise.MicroService.Core.Api
 	{
 		private IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> verbHandlers;
 		private readonly IDateTimeProvider dateTimeProvider;
+		private readonly ILogger logger;
 
-		public RequestBroker(IDateTimeProvider dateTimeProvider)
+		public RequestBroker(IDateTimeProvider dateTimeProvider, ILogger logger)
 		{
 			this.dateTimeProvider = dateTimeProvider;
+			this.logger = logger;
 		}
 
 		public HttpResponse HandleRequest(HttpRequest request)
 		{
+			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
+			Stopwatch timer = Stopwatch.StartNew();
 			IVerbHandler handler = GetRequestHandler(request);
+			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds), new LogItem("FoundHandler", handler != null ? handler.GetType().Name : "null"));
 
 			if (handler == null)
 				return HttpResponse.MethodNotFound;
 
-			HttpStatusCode statusCode = handler.Handle(request, out object content);
-			return new HttpResponse(dateTimeProvider)
-			{
-				HttpStatusCode = statusCode,
-				Content = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(content))
-			};
+			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle called"));
+			timer.Restart();
+			HttpResponse response = new HttpResponse(dateTimeProvider);
+			handler.Handle(request, response);
+			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle completed"), new LogItem("DurationMilliseconds",timer.Elapsed.TotalMilliseconds));
+			return response;
 		}
 
 		private readonly Dictionary<Type, IVerbHandler> singletonCache = new Dictionary<Type, IVerbHandler>();

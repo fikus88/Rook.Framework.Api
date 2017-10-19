@@ -11,6 +11,7 @@ using Microlise.MicroService.Core.Application.ResponseHandlers;
 using System.Net;
 using System.Threading.Tasks;
 using Microlise.Microservice.Core.Api;
+using Microlise.MicroService.Core.Api.HttpServer;
 using Microlise.MicroService.Core.Data;
 using MongoDB.Driver;
 
@@ -42,9 +43,9 @@ namespace Microlise.MicroService.Core.Api
 
 		public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
 
-		public HttpStatusCode PublishAndWaitForResponse(dynamic message, HttpStatusCode successResponseCode, out object responseData)
+		public void PublishAndWaitForResponse(dynamic message, HttpStatusCode successResponseCode, HttpResponse response)
 		{
-			var requestId = CreateUniqueId.Invoke();
+			Guid requestId = CreateUniqueId.Invoke();
 
 			message.Uuid = requestId;
 			message.LastModifiedBy = Service.GetServiceName();
@@ -73,43 +74,46 @@ namespace Microlise.MicroService.Core.Api
 
 						if (completedMessage.Errors.Any())
 						{
-							responseData = completedMessage.Errors;
+							response.SetObjectContent(completedMessage.Errors);
 
 							if (completedMessage.Errors.Any(e => e.Type == ResponseError.ErrorType.Server))
-								return HttpStatusCode.InternalServerError;
-
-							return HttpStatusCode.BadRequest;
+								response.HttpStatusCode = HttpStatusCode.InternalServerError;
+							else
+								response.HttpStatusCode = HttpStatusCode.BadRequest;
+							return;
 						}
 
-						responseData = completedMessage.Solution;
-						return successResponseCode;
+						response.SetObjectContent(completedMessage.Solution);
+						response.HttpStatusCode = successResponseCode;
+						return;
 					}
 
 					RequestsStore.TryRemove(requestId, out dataWaitHandleFromRemove);
 
-					responseData = "Failed to get a response from the bus";
+					response.SetStringContent("Failed to get a response from the bus");
 					logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
-					return HttpStatusCode.RequestTimeout;
+					response.HttpStatusCode = HttpStatusCode.RequestTimeout;
+					return;
 				}
 			}
 
-			responseData = "Failed to publish request to the bus";
+			response.SetStringContent("Failed to publish request to the bus");
 			logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Failed to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
-			return HttpStatusCode.InternalServerError;
+			response.HttpStatusCode = HttpStatusCode.InternalServerError;
 		}
 
-		public bool FindResponse(Guid requestId, object data)
+		public bool FindResponse(MessageWrapper messageWrapper)
 		{
-			bool idFound = RequestsStore.TryGetValue(requestId, out DataWaitHandle<object> dataWaitHandle);
+			bool idFound = RequestsStore.TryGetValue(messageWrapper.Uuid, out DataWaitHandle<object> dataWaitHandle);
 
 			if (idFound)
 			{
-				logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{requestId}\" Data=\"{data}\"");
-				dataWaitHandle.Set(data);
+				logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.Message}\"");
+				dataWaitHandle.Set(messageWrapper.Message);
 			}
 			else
 			{
-				logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Could not find Id in requests store\" MessageId=\"{requestId}\" Data=\"{data}\"");
+				logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Could not find Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.Message}\"");
 			}
 
 			return idFound;
@@ -134,8 +138,7 @@ namespace Microlise.MicroService.Core.Api
 				{
 					cursor.ForEachAsync(mw =>
 					{
-						Guid uuid = mw.Uuid;
-						if (FindResponse(uuid, mw.Message))
+						if (FindResponse(mw))
 							mongo.Remove(mw);
 					});
 				}
