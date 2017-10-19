@@ -1,7 +1,7 @@
 ﻿using System;
 using Microlise.MicroService.Core.Data;
 
-namespace Microlise.Microservice.Core.Api {
+namespace Microlise.MicroService.Core.Api {
 	public sealed class MessageWrapper : DataEntity
 	{
 		public Guid Uuid;

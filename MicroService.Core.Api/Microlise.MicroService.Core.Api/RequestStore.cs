@@ -10,7 +10,6 @@ using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.ResponseHandlers;
 using System.Net;
 using System.Threading.Tasks;
-using Microlise.Microservice.Core.Api;
 using Microlise.MicroService.Core.Api.HttpServer;
 using Microlise.MicroService.Core.Data;
 using MongoDB.Driver;

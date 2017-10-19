@@ -2,7 +2,7 @@
 using Microlise.MicroService.Core.Api;
 using Microlise.MicroService.Core.Api.HttpServer;
 
-namespace ExampleAPI.VerbHandlers {
+namespace Microlise.Example.ExampleAPI.VerbHandlers {
 	[VerbHandler(HttpVerb.Put, "/widget/{widgetId}","Puts a Widget in the Widget Store")]
 	internal class PutWidget : PassThroughVerbHandler
 	{
