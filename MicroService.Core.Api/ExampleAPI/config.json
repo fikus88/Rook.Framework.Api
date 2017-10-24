@@ -1,9 +1,9 @@
 {
-	"QueueUri": "amqp://guest:guest@localhost:5672",
-	"MongoDatabaseUri": "mongodb://localhost:27017",
-	"MongoDatabaseName": "exampleapi",
-	"LogLevel": "Trace",
-	"RequiresAuthorisation": "false",
-	"Port": 81,
-	"Backlog": 32
+  "QueueUri": "amqp://guest:guest@localhost:5672",
+  "MongoDatabaseUri": "mongodb://localhost:27017",
+  "MongoDatabaseName": "exampleapi",
+  "LogLevel": "Trace",
+  "RequiresAuthorisation": "false",
+  "Port": 81,
+  "Backlog": 32
 }

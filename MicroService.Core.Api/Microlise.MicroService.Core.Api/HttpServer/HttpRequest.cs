@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microlise.MicroService.Core.Common;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microlise.MicroService.Core.Api.HttpServer
 {
@@ -19,7 +20,6 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 		public AutoDictionary<string, string> Parameters { get; private set; }
 
 		private string uriPattern;
-
 		public void SetUriPattern(string value)
 		{
 			uriPattern = value;
@@ -63,7 +63,9 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
 		}
 
-		public HttpRequest(byte[] headerBytes)
+	    private JwtSecurityTokenHandler jwtHandler = new JwtSecurityTokenHandler();
+
+        public HttpRequest(byte[] headerBytes)
 		{
 			string data = Encoding.ASCII.GetString(headerBytes);
 
@@ -92,7 +94,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			if (RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
 			{
 				string payload = RequestHeader["Authorization"].Substring(7);
-				SecurityToken = new JwtSecurityToken(payload);
+			    SecurityToken = new JwtSecurityToken(payload);                
 			}
 		}
 	}
