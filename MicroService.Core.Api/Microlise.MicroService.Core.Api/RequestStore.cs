@@ -138,7 +138,7 @@ namespace Microlise.MicroService.Core.Api
 					cursor.ForEachAsync(mw =>
 					{
 						if (FindResponse(mw))
-							mongo.Remove(mw);
+							mongo.RemoveEntity(mw);
 					});
 				}
 			}
