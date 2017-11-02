@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Microlise.MicroService.Core.Api.HttpServer
 {
@@ -89,8 +90,18 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 					int i;
 					if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) > 0)
 					{
-						request = new HttpRequest(received.SubArray(i));
-						logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Received request"), new LogItem("Verb", request.Verb.ToString), new LogItem("Path", request.Path));
+					    try
+					    {
+					        request = new HttpRequest(received.SubArray(i), requiresAuthorisation);
+					    }
+					    catch (SecurityTokenException ex)
+					    {
+					        s.Shutdown(SocketShutdown.Both);
+					        s.Dispose();
+					        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", $"Authorisation required, but invalid token supplied ({ex.GetType()})"));
+					        return;
+                        }
+					    logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Received request"), new LogItem("Verb", request.Verb.ToString), new LogItem("Path", request.Path));
 						if (request.RequestHeader.ContainsKey("Content-Length"))
 						{
 							content = new byte[int.Parse(request.RequestHeader["Content-Length"])];

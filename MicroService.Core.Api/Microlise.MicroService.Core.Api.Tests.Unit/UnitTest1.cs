@@ -1,14 +1,22 @@
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microlise.MicroService.Core.Api.Tests.Unit
 {
     [TestClass]
-    public class UnitTest1
+    public class IdentityServerIntegrationTests
     {
-        [TestMethod]
-        public void TestMethod1()
+        [TestMethod, Ignore]
+        [TestProperty("BugId", "ABC123")]
+        [TestProperty("TestType", "Integration")]
+        [TestProperty("Blah blah", "Blah blah blah")]
+        public void ValidateTokenWithKey()
         {
 
             string keys =
@@ -24,6 +32,37 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
                 IssuerSigningKeys = keyset.GetSigningKeys()
             },
                 out SecurityToken blah);
+
+        }
+
+        [TestMethod, Ignore]
+        public void TestMethod2()
+        {
+            List<byte> longBuffer = new List<byte>();
+            using (Socket socket = new Socket(SocketType.Stream, ProtocolType.IP) { ReceiveBufferSize = 8192, LingerState = new LingerOption(false, 0), NoDelay = false })
+            {
+                socket.Connect("192.168.120.138", 80);
+                // Use HTTP 0.9, then we don't need to include a framework for this one little requirement
+                socket.Send(Encoding.ASCII.GetBytes("GET /identity/identity/.well-known/jwks\r\n"));
+                Stopwatch w = Stopwatch.StartNew();
+                while (socket.Connected && w.ElapsedMilliseconds < 100)
+                {
+                    if (socket.Available > 0)
+                    {
+                        byte[] buffer = new byte[socket.Available];
+                        socket.Receive(buffer);
+                        longBuffer.AddRange(buffer);
+                        w.Restart();
+                    }
+                    else
+                    {
+                        Thread.Sleep(10);
+                    }
+                }
+            }
+            string keys = Encoding.ASCII.GetString(longBuffer.ToArray());
+
+            JsonWebKeySet keyset = new JsonWebKeySet(keys);
 
         }
     }
