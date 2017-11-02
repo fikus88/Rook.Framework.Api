@@ -18,6 +18,6 @@
 	</metadata>
 	<!-- Optional 'files' node -->
 	<files>
-		<file src="**\bin\Release\**\Microlise.MicroService.Core.Api.dll" target="lib" />
+		<file src="Microlise.MicroService.Core.Api\bin\Release\**\Microlise.MicroService.Core.Api.dll" target="lib" />
 	</files>
 </package>
