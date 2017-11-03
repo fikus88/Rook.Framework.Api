@@ -1,30 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
-	  <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <Authors>Microlise Developers</Authors>
-	  <Company>Microlise</Company>
-	  <Product />
-	  <Description>.Net Standard Core Code for a MUP API</Description>
+    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Microlise Developers</Authors>
+    <Company>Microlise</Company>
+    <Product>Microlise.MicroService.Core.Api</Product>
+    <Description>.Net Standard Core Code for a MUP API</Description>
+    <Version>2017.11.3.4</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="WebSocketServer\**" />
-    <EmbeddedResource Remove="WebSocketServer\**" />
-    <None Remove="WebSocketServer\**" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Remove="HttpServer\HttpStatusCode.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microlise.MicroService.Core" Version="2017.11.3.1" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.4" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
   </ItemGroup>
-
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="..\UpdateNugetPackageVersion $(ProjectPath)" />
+  </Target>
 </Project>
