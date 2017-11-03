@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Services;
 
@@ -12,7 +13,7 @@ namespace Microlise.MicroService.Core.Api {
 			INanoHttp httpServer = Container.GetInstance<INanoHttp>();
 			IRequestStore requestStore = Container.GetInstance<IRequestStore>();
 
-			Thread.CurrentThread.Name = $"{instance.ServiceName} Main Thread";
+			Thread.CurrentThread.Name = $"{ServiceInfo.Name} Main Thread";
 
 			instance.Start();
 			httpServer.Start();

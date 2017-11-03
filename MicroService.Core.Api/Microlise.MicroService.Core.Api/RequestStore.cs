@@ -47,7 +47,7 @@ namespace Microlise.MicroService.Core.Api
 			Guid requestId = CreateUniqueId.Invoke();
 
 			message.Uuid = requestId;
-			message.LastModifiedBy = Service.GetServiceName();
+			message.LastModifiedBy = ServiceInfo.Name;
 			message.LastModifiedTime = dateTimeProvider.UtcNow;
 
 			logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");

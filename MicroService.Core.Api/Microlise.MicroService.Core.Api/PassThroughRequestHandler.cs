@@ -1,10 +1,9 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
-using Microlise.MicroService.Core.Services;
 using Microlise.MicroService.Core.Application.Message;
-using System;
 using System.Net;
 using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api
 {
@@ -27,7 +26,7 @@ namespace Microlise.MicroService.Core.Api
 
 			Message<dynamic, object> message = new Message<dynamic, object>
 			{
-				Source = Service.GetServiceName(),
+				Source = ServiceInfo.Name,
 				Method = Method,
 				Need = need ?? new { }
 			};
