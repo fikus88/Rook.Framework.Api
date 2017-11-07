@@ -7,14 +7,17 @@ using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api
 {
-	public abstract class PassThroughVerbHandler : IVerbHandler
+    /// <summary>
+    /// Passes the json in the body of the HTTP request directly onto the bus with a given Method name, returning the first received Solution(s) in the body of the HTTP response.
+    /// </summary>
+	public abstract class PassThroughActivityHandler : IActivityHandler
 	{
 		protected abstract string Method { get; }
 		protected abstract HttpStatusCode SuccessStatusCode { get; }
 
 		private readonly IRequestStore requestStore;
 
-		protected PassThroughVerbHandler(IRequestStore requestStore)
+		protected PassThroughActivityHandler(IRequestStore requestStore)
 		{
 			this.requestStore = requestStore;
 		}

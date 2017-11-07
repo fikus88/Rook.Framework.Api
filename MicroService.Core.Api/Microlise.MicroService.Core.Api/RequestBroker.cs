@@ -9,9 +9,9 @@ using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api
 {
-	internal class RequestBroker : IRequestBroker
+    internal class RequestBroker : IRequestBroker
 	{
-		private IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> verbHandlers;
+		private IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> activityHandlers;
 		private readonly IDateTimeProvider dateTimeProvider;
 		private readonly ILogger logger;
 
@@ -25,7 +25,7 @@ namespace Microlise.MicroService.Core.Api
 		{
 			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
 			Stopwatch timer = Stopwatch.StartNew();
-			IVerbHandler handler = GetRequestHandler(request);
+			IActivityHandler handler = GetRequestHandler(request);
 			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds), new LogItem("FoundHandler", handler != null ? handler.GetType().Name : "null"));
 
 			if (handler == null)
@@ -43,41 +43,41 @@ namespace Microlise.MicroService.Core.Api
 			return response;
 		}
 
-		private readonly Dictionary<Type, IVerbHandler> singletonCache = new Dictionary<Type, IVerbHandler>();
+		private readonly Dictionary<Type, IActivityHandler> singletonCache = new Dictionary<Type, IActivityHandler>();
 
-		private IVerbHandler GetRequestHandler(HttpRequest request)
+		private IActivityHandler GetRequestHandler(HttpRequest request)
 		{
-			bool Predicate(VerbHandlerAttribute attr) => RequestMatchesAttribute(request, attr);
+			bool Predicate(ActivityHandlerAttribute attr) => RequestMatchesAttribute(request, attr);
 
-			IEnumerable<KeyValuePair<Type, VerbHandlerAttribute[]>> handlers =
-				(verbHandlers ?? (verbHandlers = Container.FindAttributedTypes<VerbHandlerAttribute>())).ToArray();
+			IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> handlers =
+				(activityHandlers ?? (activityHandlers = Container.FindAttributedTypes<ActivityHandlerAttribute>())).ToArray();
 
-			KeyValuePair<Type, VerbHandlerAttribute[]> handlerInfo = handlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
+			KeyValuePair<Type, ActivityHandlerAttribute[]> handlerInfo = handlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
 
 			if (handlerInfo.Key == null) return null;
 
-			VerbHandlerAttribute attribute = handlerInfo.Value.First(Predicate);
+			ActivityHandlerAttribute attribute = handlerInfo.Value.First(Predicate);
 
 			request.SetUriPattern(attribute.Path);
 
-			IVerbHandler instance;
+			IActivityHandler instance;
 
 			if (attribute.AsSingleton)
 			{
 				if (!singletonCache.ContainsKey(handlerInfo.Key))
-					singletonCache.Add(handlerInfo.Key, (IVerbHandler)Activator.CreateInstance(handlerInfo.Key));
+					singletonCache.Add(handlerInfo.Key, (IActivityHandler)Activator.CreateInstance(handlerInfo.Key));
 
 				instance = singletonCache[handlerInfo.Key];
 			}
 			else
 			{
-				instance = (IVerbHandler)Activator.CreateInstance(handlerInfo.Key);
+				instance = (IActivityHandler)Activator.CreateInstance(handlerInfo.Key);
 			}
 
 			return instance;
 		}
 
-		private bool RequestMatchesAttribute(HttpRequest request, VerbHandlerAttribute attribute)
+		private bool RequestMatchesAttribute(HttpRequest request, ActivityHandlerAttribute attribute)
 		{
 			if (request.Verb != attribute.Verb) return false;
 

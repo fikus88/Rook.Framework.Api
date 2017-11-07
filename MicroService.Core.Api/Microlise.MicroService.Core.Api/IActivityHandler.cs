@@ -1,9 +1,11 @@
 ﻿using Microlise.MicroService.Core.Api.HttpServer;
-using System.Net;
+using System;
 
 namespace Microlise.MicroService.Core.Api
 {
-    public interface IVerbHandler
+    [Obsolete("Use IActivityHandler", true)]
+    public interface IVerbHandler : IActivityHandler { }
+    public interface IActivityHandler
     {
         void Handle(HttpRequest request, HttpResponse response);
     }
