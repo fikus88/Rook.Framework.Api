@@ -65,13 +65,13 @@ namespace Microlise.MicroService.Core.Api
 			if (attribute.AsSingleton)
 			{
 				if (!singletonCache.ContainsKey(handlerInfo.Key))
-					singletonCache.Add(handlerInfo.Key, (IActivityHandler)Activator.CreateInstance(handlerInfo.Key));
+					singletonCache.Add(handlerInfo.Key, (IActivityHandler)Container.GetInstance(handlerInfo.Key));
 
 				instance = singletonCache[handlerInfo.Key];
 			}
 			else
 			{
-				instance = (IActivityHandler)Activator.CreateInstance(handlerInfo.Key);
+				instance = (IActivityHandler) Container.GetInstance(handlerInfo.Key);
 			}
 
 			return instance;

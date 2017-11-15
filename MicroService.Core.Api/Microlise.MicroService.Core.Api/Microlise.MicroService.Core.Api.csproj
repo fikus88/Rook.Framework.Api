@@ -13,7 +13,7 @@
     <Compile Remove="HttpServer\HttpStatusCode.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microlise.MicroService.Core" Version="2017.11.15.1" />
+    <PackageReference Include="Microlise.MicroService.Core" Version="2017.11.15.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.4" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />

@@ -19,11 +19,6 @@ namespace Microlise.Example.ExampleAPI
 			IApiService apiService = Container.GetInstance<IApiService>();
 			apiService.Start();
 
-#if NETCOREAPP2_0
-            AppDomain.CurrentDomain.ProcessExit += (s, e) => instance.Stop();
-#else
-
-#endif
 			Thread.CurrentThread.IsBackground = true;
 
 			while (true)
