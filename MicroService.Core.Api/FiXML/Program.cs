@@ -8,13 +8,14 @@ namespace FiXML
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Path: " + args[0]);
-            foreach (string directory in Directory.GetDirectories(args[0]))
+            string version = args[0];
+            Console.WriteLine("Path: .");
+            foreach (string directory in Directory.GetDirectories("."))
                 foreach (string filename in Directory.GetFiles(directory, "*.csproj"))
-                    UpdateProjectFile(filename);
+                    UpdateProjectFile(filename, version);
         }
 
-        private static void UpdateProjectFile(string filename)
+        private static void UpdateProjectFile(string filename, string version)
         {
             Console.WriteLine($"Opening project file {filename}");
             XmlDocument document = new XmlDocument();
@@ -27,16 +28,16 @@ namespace FiXML
                 return;
             }
             DateTime utcNow = DateTime.UtcNow;
-            string currentVersion = node.InnerText;
-            Console.WriteLine($"Found current version {currentVersion}");
-            string[] split = currentVersion.Split('.');
-            if (split[0] != utcNow.Year.ToString() || split[1] != utcNow.Month.ToString() ||
-                split[2] != utcNow.Day.ToString())
-            {
-                Console.WriteLine("Date changed so resetting build");
-                split[3] = "0";
-            }
-            node.InnerText = $"{utcNow.Year}.{utcNow.Month}.{utcNow.Day}.{int.Parse(split[3]) + 1}";
+            //string currentVersion = node.InnerText;
+            //Console.WriteLine($"Found current version {currentVersion}");
+            //string[] split = currentVersion.Split('.');
+            //if (split[0] != utcNow.Year.ToString() || split[1] != utcNow.Month.ToString() ||
+            //    split[2] != utcNow.Day.ToString())
+            //{
+            //    Console.WriteLine("Date changed so resetting build");
+            //    split[3] = "0";
+            //}
+            node.InnerText = version;// $"{utcNow.Year}.{utcNow.Month}.{utcNow.Day}.{int.Parse(split[3]) + 1}";
             Console.WriteLine($"Changed version to {node.InnerText}");
             Console.WriteLine("Saving csproj file");
             document.Save(filename);
