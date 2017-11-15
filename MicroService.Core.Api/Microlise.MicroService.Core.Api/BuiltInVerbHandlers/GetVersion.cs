@@ -1,5 +1,6 @@
 ﻿using Microlise.MicroService.Core.Services;
 using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
 {
@@ -8,7 +9,7 @@ namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
     {
         public void Handle(HttpRequest request, HttpResponse response)
         {
-            response.SetObjectContent(new { version = Service.GetServiceVersion() });
+            response.SetObjectContent(new { version = ServiceInfo.Version });
         }
     }
 }

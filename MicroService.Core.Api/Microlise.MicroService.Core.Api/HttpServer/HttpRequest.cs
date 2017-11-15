@@ -70,11 +70,10 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
         private readonly JwtSecurityTokenHandler securityTokenHandler = new JwtSecurityTokenHandler();
 
-        private readonly TokenValidationParameters tokenValidationParameters =
-            new TokenValidationParameters
-            {
-                IssuerSigningKeys = GetSigningKeys()
-            };
+        private static TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
+        {
+            IssuerSigningKeys = GetSigningKeys()
+        };
 
         public HttpRequest(byte[] headerBytes, bool authorisationRequired)
         {
@@ -105,7 +104,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             if (authorisationRequired && RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
             {
                 string payload = RequestHeader["Authorization"].Substring(7);
-                securityTokenHandler.ValidateToken(payload, tokenValidationParameters,
+                securityTokenHandler.ValidateToken(payload, TokenValidationParameters,
                     out SecurityToken token);
 
                 SecurityToken = (JwtSecurityToken)token;

@@ -11,4 +11,10 @@
     <ProjectReference Include="..\Microlise.MicroService.Core.Api\Microlise.MicroService.Core.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
