@@ -104,8 +104,9 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 					    logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Received request"), new LogItem("Verb", request.Verb.ToString), new LogItem("Path", request.Path));
 						if (request.RequestHeader.ContainsKey("Content-Length"))
 						{
-							content = new byte[int.Parse(request.RequestHeader["Content-Length"])];
-							Array.Copy(received, i, content, 0, bytesReceived - i);
+						    int contentLength = int.Parse(request.RequestHeader["Content-Length"]);
+						    content = new byte[contentLength];
+							Array.Copy(received, i, content, 0, contentLength);
 							contentOffset = bytesReceived - i;
 						}
 						else

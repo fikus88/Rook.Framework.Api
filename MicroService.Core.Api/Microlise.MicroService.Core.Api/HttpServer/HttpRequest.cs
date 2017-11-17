@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Microlise.MicroService.Core.Api.Utils;
 using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.IoC;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +19,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         public HttpVerb Verb { get; }
         public string Path { get; }
         public string HttpVersion { get; }
-        public AutoDictionary<string, string> RequestHeader { get; } = new AutoDictionary<string, string>();
+        public CaseInsensitiveDictionary RequestHeader { get; } = new CaseInsensitiveDictionary();
         public JwtSecurityToken SecurityToken { get; }
         public byte[] Body { get; internal set; }
         public AutoDictionary<string, string> Parameters { get; private set; }

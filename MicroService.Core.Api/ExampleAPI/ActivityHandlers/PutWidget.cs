@@ -4,7 +4,7 @@ using Microlise.MicroService.Core.Api.HttpServer;
 
 namespace Microlise.Example.ExampleAPI.VerbHandlers
 {
-    [ActivityHandler("StoreWidget", HttpVerb.Put, "/widget/{widgetId}", "Puts a Widget in the Widget Store")]
+    [ActivityHandler("StoreWidget", HttpVerb.Post, "/widget/{widgetId}", "Puts a Widget in the Widget Store")]
     internal class PutWidget : PassThroughActivityHandler
     {
         public PutWidget(IRequestStore requestStore) : base(requestStore) { }
