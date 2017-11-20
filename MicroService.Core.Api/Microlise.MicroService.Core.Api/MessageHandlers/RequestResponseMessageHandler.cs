@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Linq;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.MessageHandlers;
 using Microlise.MicroService.Core.Attributes;
 using Microlise.MicroService.Core.Data;
-using Microlise.MicroService.Core.IoC;
 
 namespace Microlise.MicroService.Core.Api.MessageHandlers
 {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
 using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api
@@ -12,29 +13,34 @@ namespace Microlise.MicroService.Core.Api
     internal class RequestBroker : IRequestBroker
 	{
 		private IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> activityHandlers;
-		private readonly IDateTimeProvider dateTimeProvider;
 		private readonly ILogger logger;
+	    private readonly IActivityAuthorisationManager activityAuthorisationManager;
 
-		public RequestBroker(IDateTimeProvider dateTimeProvider, ILogger logger)
+	    public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager)
 		{
-			this.dateTimeProvider = dateTimeProvider;
 			this.logger = logger;
+		    this.activityAuthorisationManager = activityAuthorisationManager;
 		}
 
 		public HttpResponse HandleRequest(HttpRequest request)
 		{
 			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
 			Stopwatch timer = Stopwatch.StartNew();
-			IActivityHandler handler = GetRequestHandler(request);
+			IActivityHandler handler = GetRequestHandler(request, out ActivityHandlerAttribute attribute);
 			logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds), new LogItem("FoundHandler", handler != null ? handler.GetType().Name : "null"));
 
 			if (handler == null)
 				return HttpResponse.MethodNotFound;
 
 		    JwtSecurityToken token = request.SecurityToken;
-            // Check role here
-
-		    HttpResponse response = new HttpResponse(dateTimeProvider);
+		    if (!activityAuthorisationManager.CheckAuthorisation(token, attribute))
+		    {
+		        HttpResponse unauthorisedResponse = Container.GetNewInstance<HttpResponse>();
+		        unauthorisedResponse.HttpStatusCode = HttpStatusCode.Unauthorized;
+                return unauthorisedResponse;
+		    }
+            
+		    HttpResponse response = Container.GetNewInstance<HttpResponse>();
 
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle called"));
 			timer.Restart();
@@ -45,8 +51,9 @@ namespace Microlise.MicroService.Core.Api
 
 		private readonly Dictionary<Type, IActivityHandler> singletonCache = new Dictionary<Type, IActivityHandler>();
 
-		private IActivityHandler GetRequestHandler(HttpRequest request)
+		private IActivityHandler GetRequestHandler(HttpRequest request, out ActivityHandlerAttribute activityHandler)
 		{
+		    activityHandler = null;
 			bool Predicate(ActivityHandlerAttribute attr) => RequestMatchesAttribute(request, attr);
 
 			IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> handlers =
@@ -57,7 +64,7 @@ namespace Microlise.MicroService.Core.Api
 			if (handlerInfo.Key == null) return null;
 
 			ActivityHandlerAttribute attribute = handlerInfo.Value.First(Predicate);
-
+		    activityHandler = attribute;
 			request.SetUriPattern(attribute.Path);
 
 			IActivityHandler instance;
