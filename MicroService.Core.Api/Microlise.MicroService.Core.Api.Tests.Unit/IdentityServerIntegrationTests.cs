@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,97 +6,12 @@ using System.Text;
 using System.Threading;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microlise.MicroService.Core.Api.HttpServer;
-using Microlise.MicroService.Core.Common;
-using Moq;
 
-namespace Microlise.MicroService.Core.Api.Tests.Unit
-{
-    [TestClass]
-    public class HttpRequestTests
-    {
-        private string TestRequest =
-                "GET /description HTTP/1.1\r\nHost: localhost\r\nContent-Length: 123\r\n\r\n012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789123";
-
-        private string TestRequestLowerCaseHeaders =
-            "GET /description HTTP/1.1\r\nhost: localhost\r\ncontent-length: 123\r\n\r\n012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789123";
-
-
-        [TestMethod]
-        public void TestProcessingGetRequestWithProperCaseHeaders()
-        {
-            Mock<IDateTimeProvider> dtp = new Mock<IDateTimeProvider>();
-            dtp.Setup(d => d.UtcNow).Returns(DateTime.UtcNow);
-            Mock<IRequestBroker> broker = new Mock<IRequestBroker>();
-            broker.Setup(b => b.HandleRequest(It.IsAny<HttpRequest>())).Returns(new HttpResponse(dtp.Object));
-
-            Mock<IConfigurationManager> config = new Mock<IConfigurationManager>();
-            config.Setup(conf => conf.AppSettings["Port"]).Returns("8880");
-            Mock<ILogger> logger = new Mock<ILogger>();
-            NanoHttp nanoHttp = new NanoHttp(broker.Object, config.Object, logger.Object);
-            try
-            {
-                nanoHttp.Start();
-                Socket client = new Socket(SocketType.Stream, ProtocolType.IP)
-                {
-                    ReceiveBufferSize = 8192,
-                    LingerState = new LingerOption(false, 0),
-                    NoDelay = false
-                };
-                client.Connect("127.0.0.1", 8880);
-
-                client.Send(Encoding.ASCII.GetBytes(TestRequest));
-                Thread.Sleep(10);
-
-                client.Shutdown(SocketShutdown.Both);
-                client.Dispose();
-            }
-            finally
-            {
-                nanoHttp.Stop();
-            }
-        }
-
-        [TestMethod]
-        public void TestProcessingGetRequestWithLowerCaseHeaders()
-        {
-            Mock<IRequestBroker> broker = new Mock<IRequestBroker>();
-            Mock<IConfigurationManager> config = new Mock<IConfigurationManager>();
-            int port = 8881;
-            config.Setup(conf => conf.AppSettings["Port"]).Returns(port.ToString);
-            Mock<ILogger> logger = new Mock<ILogger>();
-            NanoHttp nanoHttp = new NanoHttp(broker.Object, config.Object, logger.Object);
-            try
-            {
-                nanoHttp.Start();
-                Socket client = new Socket(SocketType.Stream, ProtocolType.IP)
-                {
-                    ReceiveBufferSize = 8192,
-                    LingerState = new LingerOption(false, 0),
-                    NoDelay = false
-                };
-                client.Connect("127.0.0.1", port);
-
-                client.Send(Encoding.ASCII.GetBytes(TestRequestLowerCaseHeaders));
-                Thread.Sleep(10);
-
-                client.Shutdown(SocketShutdown.Both);
-                client.Dispose();
-            }
-            finally
-            {
-                nanoHttp.Stop();
-            }
-        }
-    }
-
+namespace Microlise.MicroService.Core.Api.Tests.Unit {
     [TestClass]
     public class IdentityServerIntegrationTests
     {
         [TestMethod, Ignore]
-        [TestProperty("BugId", "ABC123")]
-        [TestProperty("TestType", "Integration")]
-        [TestProperty("Blah blah", "Blah blah blah")]
         public void ValidateTokenWithKey()
         {
 
@@ -110,9 +24,9 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
 
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
             handler.ValidateToken(token, new TokenValidationParameters
-            {
-                IssuerSigningKeys = keyset.GetSigningKeys()
-            },
+                {
+                    IssuerSigningKeys = keyset.GetSigningKeys()
+                },
                 out SecurityToken blah);
 
         }
