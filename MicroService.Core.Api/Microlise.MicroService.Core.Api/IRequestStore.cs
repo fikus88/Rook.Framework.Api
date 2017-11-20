@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Net;
 using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Application.Message;
 
 namespace Microlise.MicroService.Core.Api
 {
-	public interface IRequestStore
-	{
-		Func<Guid> CreateUniqueId { get; set; }
-		bool FindResponse(MessageWrapper messageWrapper);
-		void PublishAndWaitForResponse(dynamic message, HttpStatusCode successResponseCode, HttpResponse response);
-		void Start();
-	}
+    public interface IRequestStore
+    {
+        Func<Guid> CreateUniqueId { get; set; }
+        bool FindResponse(MessageWrapper messageWrapper);
+        void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, HttpResponse response);
+        void Start();
+    }
 }

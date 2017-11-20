@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microlise.MicroService.Core.Application.Bus;
 using Microlise.MicroService.Core.Common;
 using Newtonsoft.Json.Linq;
-using Microlise.MicroService.Core.Services;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.ResponseHandlers;
 using System.Net;
@@ -41,19 +41,20 @@ namespace Microlise.MicroService.Core.Api
 		public static readonly ConcurrentDictionary<Guid, DataWaitHandle<object>> RequestsStore = new ConcurrentDictionary<Guid, DataWaitHandle<object>>();
 
 		public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
+	    public static List<string> Methods = new List<string>();
 
-		public void PublishAndWaitForResponse(dynamic message, HttpStatusCode successResponseCode, HttpResponse response)
+	    public void PublishAndWaitForResponse<TNeed,TSolution>(Message<TNeed,TSolution> message, HttpStatusCode successResponseCode, HttpResponse response)
 		{
-			Guid requestId = CreateUniqueId.Invoke();
+            Guid requestId = CreateUniqueId.Invoke();
 
 			message.Uuid = requestId;
 			message.LastModifiedBy = ServiceInfo.Name;
 			message.LastModifiedTime = dateTimeProvider.UtcNow;
 
-			logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
+            if (!Methods.Contains(message.Method))
+                Methods.Add(message.Method);
 
-			MessageWrapper placeholder = new MessageWrapper { Uuid = message.Uuid };
-			mongo.Put(placeholder);
+			logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
 
 			using (var dataWaitHandle = new DataWaitHandle<object>(false, EventResetMode.AutoReset))
 			{

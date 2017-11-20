@@ -1,8 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.MessageHandlers;
 using Microlise.MicroService.Core.Attributes;
 using Microlise.MicroService.Core.Data;
+using Microlise.MicroService.Core.IoC;
 
 namespace Microlise.MicroService.Core.Api.MessageHandlers
 {
@@ -10,8 +14,8 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers
 	public class RequestResponseMessageHandler<TNeed, TSolution> : IMessageHandler<TNeed, TSolution>
 	{
 		private readonly IMongoStore mongo;
-
-		public RequestResponseMessageHandler(IMongoStore mongo)
+        
+        public RequestResponseMessageHandler(IMongoStore mongo)
 		{
 			this.mongo = mongo;
 		}
@@ -19,12 +23,14 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers
 		public void Handle(Message<TNeed, TSolution> message)
 		{
 			if (message.Solution == null && !message.Errors.Any()) return;
-			MessageWrapper mw = mongo.Get<MessageWrapper>(wrapper => wrapper.Uuid == message.Uuid).FirstOrDefault();
-			if (mw != null)
-			{
-				mw.Message = message;
-				mongo.Put(mw);
-			}
+		    if (RequestStore.Methods.Contains(message.Method))
+		    {
+		        MessageWrapper mw = new MessageWrapper {
+		            Uuid = message.Uuid,
+		            Message = message
+		        };
+		        mongo.Put(mw);
+		    }
 		}
 	}
 }
