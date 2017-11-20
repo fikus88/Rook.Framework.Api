@@ -3,5 +3,6 @@
 	public interface INanoHttp
 	{
 		void Start();
+		void Stop();
 	}
 }
