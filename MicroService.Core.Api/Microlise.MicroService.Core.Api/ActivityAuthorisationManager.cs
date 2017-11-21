@@ -12,7 +12,7 @@ using Microlise.MicroService.Core.IoC;
 namespace Microlise.MicroService.Core.Api
 {
     [Handler("RegisterActivityForAuthorisation")]
-    internal class ActivityAuthorisationManager : IMessageHandler<string, string>
+    internal class ActivityAuthorisationManager : IMessageHandler<string, string>, IActivityAuthorisationManager
     {
         private readonly AutoDictionary<string, IEnumerable<string>> activityRoles = new AutoDictionary<string, IEnumerable<string>>();
 
