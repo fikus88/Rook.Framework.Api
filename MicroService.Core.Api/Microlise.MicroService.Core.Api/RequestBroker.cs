@@ -14,13 +14,13 @@ namespace Microlise.MicroService.Core.Api
 	{
 		private IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> activityHandlers;
 		private readonly ILogger logger;
-	    private readonly IActivityAuthorisationManager activityAuthorisationManager;
+	    private readonly IRoleRepository roleRepository;
 
-	    public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager)
-		{
-			this.logger = logger;
-		    this.activityAuthorisationManager = activityAuthorisationManager;
-		}
+	    public RequestBroker(ILogger logger, IRoleRepository roleRepository)
+	    {
+	        this.logger = logger;
+	        this.roleRepository = roleRepository;
+	    }
 
 		public HttpResponse HandleRequest(HttpRequest request)
 		{
@@ -33,7 +33,7 @@ namespace Microlise.MicroService.Core.Api
 				return HttpResponse.MethodNotFound;
 
 		    JwtSecurityToken token = request.SecurityToken;
-		    if (!activityAuthorisationManager.CheckAuthorisation(token, attribute))
+		    if (!roleRepository.CheckAuthorisation(token, attribute))
 		    {
 		        HttpResponse unauthorisedResponse = Container.GetNewInstance<HttpResponse>();
 		        unauthorisedResponse.HttpStatusCode = HttpStatusCode.Unauthorized;

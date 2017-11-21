@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.Application.Bus;
 using Microlise.MicroService.Core.Attributes;
@@ -12,17 +10,15 @@ using Microlise.MicroService.Core.IoC;
 namespace Microlise.MicroService.Core.Api
 {
     [Handler("RegisterActivityForAuthorisation")]
-    internal class ActivityAuthorisationManager : IMessageHandler<string, string>, IActivityAuthorisationManager
+    internal class ActivityAuthorisationManager : IMessageHandler<string, string>
     {
-        private readonly AutoDictionary<string, IEnumerable<string>> activityRoles = new AutoDictionary<string, IEnumerable<string>>();
-
         private readonly IQueueWrapper queue;
-        private readonly bool requiresAuthorisation;
+        private readonly IRoleRepository roleRepository;
 
-        public ActivityAuthorisationManager(IQueueWrapper queueWrapper, IConfigurationManager configurationManager)
+        public ActivityAuthorisationManager(IQueueWrapper queueWrapper, IRoleRepository roleRepository)
         {
             queue = queueWrapper;
-            requiresAuthorisation = string.Equals(configurationManager.AppSettings["RequiresAuthorisation"], "true", StringComparison.OrdinalIgnoreCase);
+            this.roleRepository = roleRepository;
         }
 
         public void Initialise()
@@ -37,20 +33,13 @@ namespace Microlise.MicroService.Core.Api
                     Method = "RegisterActivityForAuthorisation",
                     Need = attribute.ActivityName
                 });
-        }
-
-        public bool CheckAuthorisation(JwtSecurityToken token, ActivityHandlerAttribute attribute)
-        {
-            if (!requiresAuthorisation) return true;
-            string[] usersRoles = token.Claims.Where(c => c.Type == "role").Select(c => c.Value).ToArray();
-            return activityRoles.ContainsKey(attribute.ActivityName) &&
-                   activityRoles[attribute.ActivityName].Any(usersRoles.Contains);
-        }
+        }        
 
         public void Handle(Message<string, string> message)
         {
             if (message.Solution == null) return;
-            activityRoles.Add(message.Need, message.Solution);
+            roleRepository.Add(message.Need, message.Solution);
+            
         }
     }
 
