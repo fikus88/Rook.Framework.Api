@@ -12,7 +12,20 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microlise.MicroService.Core.Api.HttpServer
 {
-    public class HttpRequest
+    public interface IHttpRequest
+    {
+        Uri Uri { get; }
+        HttpVerb Verb { get; }
+        string Path { get; }
+        string HttpVersion { get; }
+        CaseInsensitiveDictionary RequestHeader { get; }
+        JwtSecurityToken SecurityToken { get; }
+        byte[] Body { get; }
+        AutoDictionary<string, string> Parameters { get; }
+        void SetUriPattern(string value);
+    }
+
+    public class HttpRequest : IHttpRequest
     {
         public Uri Uri { get; }
 

@@ -7,6 +7,6 @@ namespace Microlise.MicroService.Core.Api
     public interface IVerbHandler : IActivityHandler { }
     public interface IActivityHandler
     {
-        void Handle(HttpRequest request, HttpResponse response);
+        void Handle(IHttpRequest request, IHttpResponse response);
     }
 }
