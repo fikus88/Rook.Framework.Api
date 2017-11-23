@@ -44,8 +44,8 @@ namespace Microlise.MicroService.Core.Api
         public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
         public static List<string> Methods = new List<string>();
 
-        public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, HttpResponse response)
-        {
+	    public void PublishAndWaitForResponse<TNeed,TSolution>(Message<TNeed,TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response)
+		{
             Guid requestId = CreateUniqueId.Invoke();
 
             message.Uuid = requestId;

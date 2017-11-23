@@ -6,9 +6,10 @@ namespace Microlise.Example.ExampleAPI.VerbHandlers
     [ActivityHandler("GetWidgetUser", HttpVerb.Get, "/user/{userId}")]
     internal class GetUser : IActivityHandler
     {
-        public void Handle(HttpRequest request, HttpResponse response)
+        public void Handle(IHttpRequest request, IHttpResponse response)
         {
             response.SetObjectContent(new { userId = int.Parse(request.Parameters["userId"]), userName = request.Parameters["name"] });
         }
     }
 }
+    

@@ -22,7 +22,7 @@ namespace Microlise.MicroService.Core.Api
 			this.requestStore = requestStore;
 		}
 
-		public virtual void Handle(HttpRequest request, HttpResponse response)
+		public virtual void Handle(IHttpRequest request, IHttpResponse response)
 		{
 			byte[] buffer = request.Body;
 			object need = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(buffer));

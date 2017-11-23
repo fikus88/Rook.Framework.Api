@@ -6,7 +6,7 @@ namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
 	[ActivityHandler("GetApiFavicon", HttpVerb.Get, "favicon.ico", "Sends a NoContent response")]
 	internal class GetFavIcon : IActivityHandler
 	{
-		public void Handle(HttpRequest request, HttpResponse response)
+		public void Handle(IHttpRequest request, IHttpResponse response)
 		{
 			response.Content = null;
 			response.HttpStatusCode = HttpStatusCode.NoContent;
