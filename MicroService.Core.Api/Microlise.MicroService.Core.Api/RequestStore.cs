@@ -73,7 +73,7 @@ namespace Microlise.MicroService.Core.Api
                             errors = JsonConvert.DeserializeObject<List<ResponseError>>(dataWaitHandle.Errors);
 
 
-                        logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{completedMessage}\"");
+                        logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
 
                         if (errors != null && errors.Any())
                         {
