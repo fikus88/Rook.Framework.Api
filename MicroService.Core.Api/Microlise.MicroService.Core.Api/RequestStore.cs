@@ -5,14 +5,15 @@ using System.Linq;
 using System.Threading;
 using Microlise.MicroService.Core.Application.Bus;
 using Microlise.MicroService.Core.Common;
-using Newtonsoft.Json.Linq;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.ResponseHandlers;
 using System.Net;
 using System.Threading.Tasks;
 using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api.Utils;
 using Microlise.MicroService.Core.Data;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 
 namespace Microlise.MicroService.Core.Api
 {
@@ -39,13 +40,13 @@ namespace Microlise.MicroService.Core.Api
             this.dateTimeProvider = dateTimeProvider;
         }
 
-        public static readonly ConcurrentDictionary<Guid, DataWaitHandle<object>> RequestsStore = new ConcurrentDictionary<Guid, DataWaitHandle<object>>();
+        public static readonly ConcurrentDictionary<Guid, DataWaitHandle> RequestsStore = new ConcurrentDictionary<Guid, DataWaitHandle>();
 
         public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
         public static List<string> Methods = new List<string>();
 
-	    public void PublishAndWaitForResponse<TNeed,TSolution>(Message<TNeed,TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response)
-		{
+        public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response)
+        {
             Guid requestId = CreateUniqueId.Invoke();
 
             message.Uuid = requestId;
@@ -57,7 +58,7 @@ namespace Microlise.MicroService.Core.Api
 
             logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
 
-            using (var dataWaitHandle = new DataWaitHandle<object>(false, EventResetMode.AutoReset))
+            using (var dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset))
             {
                 if (RequestsStore.TryAdd(requestId, dataWaitHandle))
                 {
@@ -67,7 +68,8 @@ namespace Microlise.MicroService.Core.Api
                     {
                         RequestsStore.TryRemove(requestId, out _);
 
-                        var completedMessage = ((JObject)dataWaitHandle.Data).ToObject<Message<object, object>>();
+                        var completedMessage = message;
+                        message.Solution = JsonConvert.DeserializeObject<TSolution[]>(dataWaitHandle.Data);
 
                         logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{completedMessage}\"");
 
@@ -82,7 +84,7 @@ namespace Microlise.MicroService.Core.Api
                             return;
                         }
 
-                        response.SetObjectContent(completedMessage.Solution);
+                        response.SetStringContent(dataWaitHandle.Data);
                         response.HttpStatusCode = successResponseCode;
                         return;
                     }
@@ -103,16 +105,17 @@ namespace Microlise.MicroService.Core.Api
 
         public bool FindResponse(MessageWrapper messageWrapper)
         {
-            bool idFound = RequestsStore.TryGetValue(messageWrapper.Uuid, out DataWaitHandle<object> dataWaitHandle);
+            logger.Trace(nameof(RequestStore) + "." + nameof(FindResponse));
+            bool idFound = RequestsStore.TryGetValue(messageWrapper.Uuid, out DataWaitHandle dataWaitHandle);
 
             if (idFound)
             {
-                logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.Message}\"");
-                dataWaitHandle.Set(messageWrapper.Message);
+                logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.SolutionJson}\"");
+                dataWaitHandle.Set(messageWrapper.SolutionJson);
             }
             else
             {
-                logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Could not find Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.Message}\"");
+                logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Could not find Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.SolutionJson}\"");
             }
 
             return idFound;
@@ -130,24 +133,31 @@ namespace Microlise.MicroService.Core.Api
         private void WaitLoop()
         {
             logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop));
+            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "GetCappedCollection"));
             IMongoCollection<MessageWrapper> collection = mongo.GetCappedCollection<MessageWrapper>();
-            FindOptions<MessageWrapper> options = new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait };
+            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "Create FindOptions"));
+            FindOptions<MessageWrapper> options =
+                new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait };
+            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "Enter Loop"));
 
             while (true)
             {
-                using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => mw.Message != null, options))
+                using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => true, options))
                 {
                     cursor.ForEachAsync(mw =>
                     {
-                        logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Action","Item added to the capped collection"));
+                        logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop),
+                            new LogItem("Action", "Item added to the capped collection"));
                         if (FindResponse(mw))
                         {
-                            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Action", "Item removed from the capped collection"));
+                            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop),
+                                new LogItem("Action", "Item removed from the capped collection"));
                             mongo.RemoveEntity(mw);
                         }
                     });
                 }
             }
+
         }
     }
 }

@@ -3,6 +3,7 @@ using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.MessageHandlers;
 using Microlise.MicroService.Core.Attributes;
 using Microlise.MicroService.Core.Data;
+using Newtonsoft.Json;
 
 namespace Microlise.MicroService.Core.Api.MessageHandlers
 {
@@ -23,7 +24,7 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers
 		    {
 		        MessageWrapper mw = new MessageWrapper {
 		            Uuid = message.Uuid,
-		            Message = message
+		            SolutionJson = JsonConvert.SerializeObject(message.Solution)
 		        };
 		        mongo.Put(mw);
 		    }

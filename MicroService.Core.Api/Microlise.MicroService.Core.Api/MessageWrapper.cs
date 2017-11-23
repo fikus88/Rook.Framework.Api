@@ -5,9 +5,9 @@ namespace Microlise.MicroService.Core.Api {
 	public sealed class MessageWrapper : DataEntity
 	{
 		public Guid Uuid;
-		public object Message;
+		public string SolutionJson;
 
-		internal MessageWrapper()
+	    public MessageWrapper()
 		{
 			ExpiresAt = DateTime.UtcNow.AddMinutes(1);
 		}
