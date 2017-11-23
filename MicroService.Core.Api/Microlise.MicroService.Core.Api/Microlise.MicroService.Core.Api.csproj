@@ -7,9 +7,9 @@
     <Company>Microlise</Company>
     <Product>Microlise.MicroService.Core.Api</Product>
     <Description>.Net Standard Core Code for a MUP API</Description>
-    <Version>2017.11.23.4</Version>
-    <AssemblyVersion>2017.11.23.4</AssemblyVersion>
-    <FileVersion>2017.11.23.4</FileVersion>
+    <Version>2017.11.23.5</Version>
+    <AssemblyVersion>2017.11.23.5</AssemblyVersion>
+    <FileVersion>2017.11.23.5</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="HttpServer\HttpStatusCode.cs" />

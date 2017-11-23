@@ -19,7 +19,9 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers
 
 		public void Handle(Message<TNeed, TSolution> message)
 		{
+            // If Solution == null and there are no errors, we have nothing to store.
 			if (message.Solution == null && !message.Errors.Any()) return;
+
 		    if (RequestStore.Methods.Contains(message.Method))
 		    {
 		        MessageWrapper mw = new MessageWrapper {

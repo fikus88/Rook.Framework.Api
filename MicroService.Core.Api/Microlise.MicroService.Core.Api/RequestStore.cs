@@ -153,8 +153,7 @@ namespace Microlise.MicroService.Core.Api
                         if (FindResponse(mw))
                         {
                             logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop),
-                                new LogItem("Action", "Item removed from the capped collection"));
-                            mongo.RemoveEntity(mw);
+                                new LogItem("Action", "Item is ours, so it's been processed"));
                         }
                     });
                 }
