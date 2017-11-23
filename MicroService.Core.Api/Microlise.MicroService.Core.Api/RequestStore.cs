@@ -25,22 +25,23 @@ namespace Microlise.MicroService.Core.Api
 
         private readonly ILogger logger;
         private readonly IMongoStore mongo;
+        private readonly IRequestMatcher requestMatcher;
         private readonly IDateTimeProvider dateTimeProvider;
 
         public RequestStore(
             IDateTimeProvider dateTimeProvider,
             IQueueWrapper queueWrapper,
             ILogger logger,
-            IMongoStore mongo)
+            IMongoStore mongo,
+            IRequestMatcher requestMatcher)
         {
             logger.Trace(nameof(RequestStore) + " constructor");
             this.queueWrapper = queueWrapper;
             this.logger = logger;
             this.mongo = mongo;
+            this.requestMatcher = requestMatcher;
             this.dateTimeProvider = dateTimeProvider;
         }
-
-        public static readonly ConcurrentDictionary<Guid, DataWaitHandle> RequestsStore = new ConcurrentDictionary<Guid, DataWaitHandle>();
 
         public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
         public static List<string> Methods = new List<string>();
@@ -48,79 +49,51 @@ namespace Microlise.MicroService.Core.Api
         public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response)
         {
             Guid requestId = CreateUniqueId.Invoke();
+            if (message.Uuid == Guid.Empty)
+                message.Uuid = requestId;
 
-            message.Uuid = requestId;
             message.LastModifiedBy = ServiceInfo.Name;
             message.LastModifiedTime = dateTimeProvider.UtcNow;
 
             if (!Methods.Contains(message.Method))
                 Methods.Add(message.Method);
 
-            logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
+            logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
 
-            using (var dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset))
+            using (DataWaitHandle dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset))
             {
-                if (RequestsStore.TryAdd(requestId, dataWaitHandle))
+                requestMatcher.RegisterWaitHandle(message.Uuid, dataWaitHandle);
+
+                queueWrapper.PublishMessage(message);
+
+                if (dataWaitHandle.WaitOne(MaxTimeToWaitForBusResponseInMilliseconds))
                 {
-                    queueWrapper.PublishMessage(message);
+                    List<ResponseError> errors = null;
+                    if (dataWaitHandle.Errors != null)
+                        errors = JsonConvert.DeserializeObject<List<ResponseError>>(dataWaitHandle.Errors);
 
-                    if (dataWaitHandle.WaitOne(MaxTimeToWaitForBusResponseInMilliseconds))
+                    logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
+
+                    if (errors != null && errors.Any())
                     {
-                        RequestsStore.TryRemove(requestId, out _);
+                        response.SetStringContent(dataWaitHandle.Errors);
 
-                        List<ResponseError> errors = null;
-                        if (dataWaitHandle.Errors != null)
-                            errors = JsonConvert.DeserializeObject<List<ResponseError>>(dataWaitHandle.Errors);
-
-
-                        logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\"");
-
-                        if (errors != null && errors.Any())
-                        {
-                            response.SetStringContent(dataWaitHandle.Errors);
-
-                            if (errors.Any(e => e.Type == ResponseError.ErrorType.Server))
-                                response.HttpStatusCode = HttpStatusCode.InternalServerError;
-                            else
-                                response.HttpStatusCode = HttpStatusCode.BadRequest;
-                            return;
-                        }
-
-                        response.SetStringContent(dataWaitHandle.Solution);
-                        response.HttpStatusCode = successResponseCode;
+                        if (errors.Any(e => e.Type == ResponseError.ErrorType.Server))
+                            response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                        else
+                            response.HttpStatusCode = HttpStatusCode.BadRequest;
                         return;
                     }
 
-                    RequestsStore.TryRemove(requestId, out _);
-
-                    response.SetStringContent("Failed to get a response from the bus");
-                    logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
-                    response.HttpStatusCode = HttpStatusCode.RequestTimeout;
+                    response.SetStringContent(dataWaitHandle.Solution);
+                    response.HttpStatusCode = successResponseCode;
                     return;
                 }
+
+                response.SetStringContent("Failed to get a response from the bus");
+                logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
+                response.HttpStatusCode = HttpStatusCode.RequestTimeout;
             }
-
-            response.SetStringContent("Failed to publish request to the bus");
-            logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Failed to publish message\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
-            response.HttpStatusCode = HttpStatusCode.InternalServerError;
-        }
-
-        public bool FindResponse(MessageWrapper messageWrapper)
-        {
-            logger.Trace(nameof(RequestStore) + "." + nameof(FindResponse));
-            bool idFound = RequestsStore.TryGetValue(messageWrapper.Uuid, out DataWaitHandle dataWaitHandle);
-
-            if (idFound)
-            {
-                logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.SolutionJson}\"");
-                dataWaitHandle.Set(messageWrapper.SolutionJson, messageWrapper.ErrorsJson);
-            }
-            else
-            {
-                logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Could not find Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.SolutionJson}\"");
-            }
-
-            return idFound;
         }
 
         private Task waitLoopTask;
@@ -148,17 +121,13 @@ namespace Microlise.MicroService.Core.Api
                 {
                     cursor.ForEachAsync(mw =>
                     {
-                        logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop),
-                            new LogItem("Action", "Item added to the capped collection"));
-                        if (FindResponse(mw))
-                        {
-                            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop),
-                                new LogItem("Action", "Item is ours, so it's been processed"));
-                        }
+                        requestMatcher.RegisterMessageWrapper(mw.Uuid, mw);
                     });
                 }
             }
 
         }
     }
+
+    
 }
