@@ -6,6 +6,7 @@ namespace Microlise.MicroService.Core.Api {
 	{
 		public Guid Uuid;
 		public string SolutionJson;
+		public string ErrorsJson;
 
 	    public MessageWrapper()
 		{

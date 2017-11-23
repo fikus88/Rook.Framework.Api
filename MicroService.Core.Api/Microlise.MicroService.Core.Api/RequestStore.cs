@@ -68,23 +68,25 @@ namespace Microlise.MicroService.Core.Api
                     {
                         RequestsStore.TryRemove(requestId, out _);
 
-                        var completedMessage = message;
-                        message.Solution = JsonConvert.DeserializeObject<TSolution[]>(dataWaitHandle.Data);
+                        List<ResponseError> errors = null;
+                        if (dataWaitHandle.Errors != null)
+                            errors = JsonConvert.DeserializeObject<List<ResponseError>>(dataWaitHandle.Errors);
+
 
                         logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{requestId}\" MessageMethod=\"{message.Method}\" Message=\"{completedMessage}\"");
 
-                        if (completedMessage.Errors.Any())
+                        if (errors != null && errors.Any())
                         {
-                            response.SetObjectContent(completedMessage.Errors);
+                            response.SetStringContent(dataWaitHandle.Errors);
 
-                            if (completedMessage.Errors.Any(e => e.Type == ResponseError.ErrorType.Server))
+                            if (errors.Any(e => e.Type == ResponseError.ErrorType.Server))
                                 response.HttpStatusCode = HttpStatusCode.InternalServerError;
                             else
                                 response.HttpStatusCode = HttpStatusCode.BadRequest;
                             return;
                         }
 
-                        response.SetStringContent(dataWaitHandle.Data);
+                        response.SetStringContent(dataWaitHandle.Solution);
                         response.HttpStatusCode = successResponseCode;
                         return;
                     }
@@ -111,7 +113,7 @@ namespace Microlise.MicroService.Core.Api
             if (idFound)
             {
                 logger.Trace($"Operation=\"{nameof(RequestsStore)}.{nameof(FindResponse)}\" Event=\"Found Id in requests store\" MessageId=\"{messageWrapper.Uuid}\" Data=\"{messageWrapper.SolutionJson}\"");
-                dataWaitHandle.Set(messageWrapper.SolutionJson);
+                dataWaitHandle.Set(messageWrapper.SolutionJson, messageWrapper.ErrorsJson);
             }
             else
             {

@@ -8,11 +8,13 @@ namespace Microlise.MicroService.Core.Api.Utils
         public DataWaitHandle(bool initialState, EventResetMode mode) : base(initialState, mode) { }
         private DataWaitHandle(bool initialState, EventResetMode mode, string name) : base(initialState, mode, name) { }
         private DataWaitHandle(bool initialState, EventResetMode mode, string name, out bool createdNew) : base(initialState, mode, name, out createdNew) { }
-        public string Data { get; set; }
+        public string Solution { get; set; }
+        public string Errors { get; set; }
 
-        public void Set(string data)
+        public void Set(string solution, string errors)
         {
-            Data = data;
+            Solution = solution;
+            Errors = errors;
 
             try
             {

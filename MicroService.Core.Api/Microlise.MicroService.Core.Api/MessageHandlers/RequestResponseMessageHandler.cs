@@ -24,7 +24,8 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers
 		    {
 		        MessageWrapper mw = new MessageWrapper {
 		            Uuid = message.Uuid,
-		            SolutionJson = JsonConvert.SerializeObject(message.Solution)
+		            SolutionJson = JsonConvert.SerializeObject(message.Solution),
+                    ErrorsJson = JsonConvert.SerializeObject(message.Errors)
 		        };
 		        mongo.Put(mw);
 		    }
