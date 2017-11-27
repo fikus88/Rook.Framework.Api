@@ -1,4 +1,6 @@
-﻿namespace Microlise.MicroService.Core.Api.HttpServer
+﻿using System;
+
+namespace Microlise.MicroService.Core.Api.HttpServer
 {
 	public enum HttpVerb
 	{
@@ -6,6 +8,7 @@
 		Post,
 		Put,
 		Delete,
-		Patch
+		Patch,        
+        Options
 	}
 }

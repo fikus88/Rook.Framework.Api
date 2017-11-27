@@ -159,7 +159,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                         logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest completed"), new LogItem("DurationMilliseconds", responseTimer.Elapsed.TotalMilliseconds));
 
                         response.Headers.Add("Access-Control-Allow-Origin", "*");
-                        response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT");
+                        response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS");
                         response.Headers.Add("Access-Control-Allow-Headers", "authorization");
 
                         s.Send(response.ToByteArray());

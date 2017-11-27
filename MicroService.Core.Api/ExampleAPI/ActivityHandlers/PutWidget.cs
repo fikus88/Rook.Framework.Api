@@ -2,7 +2,7 @@
 using Microlise.MicroService.Core.Api;
 using Microlise.MicroService.Core.Api.HttpServer;
 
-namespace Microlise.Example.ExampleAPI.VerbHandlers
+namespace Microlise.Example.ExampleAPI.ActivityHandlers
 {
     [ActivityHandler("StoreWidget", HttpVerb.Post, "/widget/{widgetId}", "Puts a Widget in the Widget Store")]
     internal class PutWidget : PassThroughActivityHandler
