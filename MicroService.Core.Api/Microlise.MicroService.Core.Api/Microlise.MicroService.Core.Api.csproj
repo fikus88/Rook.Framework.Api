@@ -7,15 +7,15 @@
     <Company>Microlise</Company>
     <Product>Microlise.MicroService.Core.Api</Product>
     <Description>.Net Standard Core Code for a MUP API</Description>
-    <Version>2017.11.27.1</Version>
-    <AssemblyVersion>2017.11.27.1</AssemblyVersion>
-    <FileVersion>2017.11.27.1</FileVersion>
+    <Version>2017.11.28.1</Version>
+    <AssemblyVersion>2017.11.28.1</AssemblyVersion>
+    <FileVersion>2017.11.28.1</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="HttpServer\HttpStatusCode.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microlise.MicroService.Core" Version="2017.11.23.4" />
+    <PackageReference Include="Microlise.MicroService.Core" Version="2017.11.28.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.5" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />

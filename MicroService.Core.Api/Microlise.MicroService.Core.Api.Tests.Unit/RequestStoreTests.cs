@@ -26,7 +26,7 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
         private RequestStore rs;
 
         [TestInitialize]
-        public void init()
+        public void Init()
         {
             rs = new RequestStore(dtp.Object, qw.Object, log.Object, mongo,Container.GetInstance<IRequestMatcher>());
             rs.Start();

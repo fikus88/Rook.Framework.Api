@@ -2,6 +2,7 @@
 using Microlise.MicroService.Core.Data;
 
 namespace Microlise.MicroService.Core.Api {
+    [CappedCollection]
 	public sealed class MessageWrapper : DataEntity
 	{
 		public Guid Uuid;

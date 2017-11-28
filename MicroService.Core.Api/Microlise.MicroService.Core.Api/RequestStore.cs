@@ -109,7 +109,7 @@ namespace Microlise.MicroService.Core.Api
         {
             logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop));
             logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "GetCappedCollection"));
-            IMongoCollection<MessageWrapper> collection = mongo.GetCappedCollection<MessageWrapper>();
+            IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
             logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "Create FindOptions"));
             FindOptions<MessageWrapper> options =
                 new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait };
