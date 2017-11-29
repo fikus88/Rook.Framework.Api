@@ -9,14 +9,17 @@ namespace Microlise.MicroService.Core.Api
     {
         private readonly AutoDictionary<Guid, RequestData> requests = new AutoDictionary<Guid, RequestData>();
 
-        public void RegisterWaitHandle(Guid uuid, DataWaitHandle handle)
+        public void RegisterWaitHandle(Guid uuid, DataWaitHandle handle, ResponseStyle responseStyle)
         {
             lock (requests)
             {
                 if (requests.ContainsKey(uuid))
+                {
                     requests[uuid].Handle = handle;
+                    requests[uuid].ResponseStyle = responseStyle;
+                }
                 else
-                    requests[uuid] = new RequestData(uuid, handle);
+                    requests[uuid] = new RequestData(uuid, handle, responseStyle);
                 ProcessRemovals();
             }
         }
@@ -72,16 +75,21 @@ namespace Microlise.MicroService.Core.Api
                 }
             }
 
+            public ResponseStyle ResponseStyle { get; set; }
+
             private void SetHandle()
             {
-                handle.Set(wrapper.SolutionJson, wrapper.ErrorsJson);
+                handle.Set(
+                    ResponseStyle == ResponseStyle.WholeSolution ?
+                    wrapper.SolutionJson : wrapper.FirstOrDefaultJson, wrapper.ErrorsJson);
                 Set = true;
             }
 
-            public RequestData(Guid uuid, DataWaitHandle handle)
+            public RequestData(Guid uuid, DataWaitHandle handle, ResponseStyle responseStyle)
             {
                 Uuid = uuid;
                 Handle = handle;
+                ResponseStyle = responseStyle;
             }
 
             public RequestData(Guid uuid, MessageWrapper wrapper)

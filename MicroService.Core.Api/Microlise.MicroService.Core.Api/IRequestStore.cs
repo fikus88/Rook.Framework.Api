@@ -9,7 +9,7 @@ namespace Microlise.MicroService.Core.Api
     {
         Func<Guid> CreateUniqueId { get; set; }
         //bool FindResponse(MessageWrapper messageWrapper);
-        void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response);
+        void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution);
         void Start();
     }
 }
