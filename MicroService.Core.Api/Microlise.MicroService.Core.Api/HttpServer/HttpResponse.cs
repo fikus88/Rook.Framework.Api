@@ -88,7 +88,11 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 				responseString.Append($"Content-Length: {Content.Length}\r\n");
 				responseString.Append($"Content-Type: {ContentType ?? "application/json"}\r\n");
 			}
-			responseString.Append("Connection: Closed\r\n\r\n");
+
+		    foreach (KeyValuePair<string, string> keyValuePair in Headers)
+		        responseString.Append($"{keyValuePair.Key}: {keyValuePair.Value}\r\n");
+
+		    responseString.Append("Connection: Closed\r\n\r\n");
 			byte[] response;
 			if (Content != null)
 			{
