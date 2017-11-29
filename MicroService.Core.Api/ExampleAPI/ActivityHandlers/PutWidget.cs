@@ -10,5 +10,6 @@ namespace Microlise.Example.ExampleAPI.ActivityHandlers
         public PutWidget(IRequestStore requestStore) : base(requestStore) { }
         protected override string Method => "StoreWidget";
         protected override HttpStatusCode SuccessStatusCode => HttpStatusCode.OK;
+        protected override ResponseStyle ResponseStyle => ResponseStyle.FirstOrDefault;
     }
 }

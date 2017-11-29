@@ -62,7 +62,7 @@ namespace Microlise.MicroService.Core.Api
 
             using (DataWaitHandle dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset))
             {
-                requestMatcher.RegisterWaitHandle(message.Uuid, dataWaitHandle,responseStyle);
+                requestMatcher.RegisterWaitHandle(message.Uuid, dataWaitHandle, responseStyle);
 
                 queueWrapper.PublishMessage(message);
 
@@ -107,22 +107,23 @@ namespace Microlise.MicroService.Core.Api
 
         private void WaitLoop()
         {
-            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop));
-            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "GetCappedCollection"));
-            IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
-            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "Create FindOptions"));
-            FindOptions<MessageWrapper> options =
-                new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait };
-            logger.Trace(nameof(RequestStore) + "." + nameof(WaitLoop), new LogItem("Doing", "Enter Loop"));
-
+            logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}");
             while (true)
             {
-                using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => true, options))
+                logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("Doing", "GetCappedCollection"));
+                IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
+                logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("Doing", "Create FindOptions"));
+                FindOptions<MessageWrapper> options =
+                    new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait };
+                logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("Doing", "Enter Loop"));
+                try
                 {
-                    cursor.ForEachAsync(mw =>
-                    {
-                        requestMatcher.RegisterMessageWrapper(mw.Uuid, mw);
-                    });
+                    using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => true, options))
+                        cursor.ForEachAsync(mw => requestMatcher.RegisterMessageWrapper(mw.Uuid, mw));
+                }
+                catch (Exception ex)
+                {
+                    logger.Error($"{nameof(RequestStore)}.{nameof(WaitLoop)}",new LogItem("ExceptionMessage",ex.Message), new LogItem("Exception",ex.ToString));
                 }
             }
 

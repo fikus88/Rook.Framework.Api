@@ -17,6 +17,8 @@ namespace Microlise.MicroService.Core.Api
 
 		private readonly IRequestStore requestStore;
 
+        protected virtual ResponseStyle ResponseStyle { get; } = ResponseStyle.WholeSolution;
+
 		protected PassThroughActivityHandler(IRequestStore requestStore)
 		{
 			this.requestStore = requestStore;
@@ -34,7 +36,7 @@ namespace Microlise.MicroService.Core.Api
 				Need = need ?? new { }
 			};
 
-			requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, response);
+			requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, response, ResponseStyle);
 		}
 	}
 }
