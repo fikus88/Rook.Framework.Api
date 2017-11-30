@@ -110,12 +110,9 @@ namespace Microlise.MicroService.Core.Api
             logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}");
             while (true)
             {
-                logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("Doing", "GetCappedCollection"));
                 IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
-                logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("Doing", "Create FindOptions"));
                 FindOptions<MessageWrapper> options =
-                    new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait };
-                logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("Doing", "Enter Loop"));
+                    new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait, MaxAwaitTime = TimeSpan.FromHours(12)};
                 try
                 {
                     using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => true, options))
@@ -126,7 +123,7 @@ namespace Microlise.MicroService.Core.Api
                     logger.Error($"{nameof(RequestStore)}.{nameof(WaitLoop)}",new LogItem("ExceptionMessage",ex.Message), new LogItem("Exception",ex.ToString));
                 }
             }
-
+        
         }
     }
 }
