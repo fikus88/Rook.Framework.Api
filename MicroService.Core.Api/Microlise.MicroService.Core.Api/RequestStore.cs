@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -108,22 +107,24 @@ namespace Microlise.MicroService.Core.Api
         private void WaitLoop()
         {
             logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}");
+            FindOptions<MessageWrapper> options =
+                new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait, MaxAwaitTime = TimeSpan.FromHours(12) };
+
             while (true)
             {
-                IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
-                FindOptions<MessageWrapper> options =
-                    new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait, MaxAwaitTime = TimeSpan.FromHours(12)};
                 try
                 {
+                    IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
+                
                     using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => true, options))
                         cursor.ForEachAsync(mw => requestMatcher.RegisterMessageWrapper(mw.Uuid, mw));
                 }
                 catch (Exception ex)
                 {
-                    logger.Error($"{nameof(RequestStore)}.{nameof(WaitLoop)}",new LogItem("ExceptionMessage",ex.Message), new LogItem("Exception",ex.ToString));
+                    logger.Error($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("ExceptionMessage", ex.Message), new LogItem("Exception", ex.ToString));
+                    Thread.Sleep(1000);
                 }
             }
-        
         }
     }
 }
