@@ -2,8 +2,7 @@
 using Microlise.MicroService.Core.Data;
 
 namespace Microlise.MicroService.Core.Api {
-    [CappedCollection]
-	public sealed class MessageWrapper : DataEntity
+    public sealed class MessageWrapper : DataObjectIncrementalId
 	{
 		public Guid Uuid;
 		public string SolutionJson;
@@ -12,7 +11,7 @@ namespace Microlise.MicroService.Core.Api {
 
 	    public MessageWrapper()
 		{
-			ExpiresAt = DateTime.UtcNow.AddMinutes(1);
+			ExpiresAt = DateTime.UtcNow.AddMinutes(2);
 		}
 	}
 }

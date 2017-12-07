@@ -12,6 +12,7 @@ using Microlise.MicroService.Core.IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
+using Microlise.MicroService.Core.TestUtils;
 
 namespace Microlise.MicroService.Core.Api.Tests.Unit
 {
@@ -21,12 +22,13 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
         private readonly Mock<IDateTimeProvider> dtp = new Mock<IDateTimeProvider>();
         private readonly Mock<IQueueWrapper> qw = new Mock<IQueueWrapper>();
         private readonly Mock<ILogger> log = new Mock<ILogger>();
-        private readonly IMongoStore mongo = Container.GetInstance<IMongoStore>();
+        private readonly MongoStore mongo = Container.GetInstance<MongoStore>();
         private RequestStore rs;
 
         [TestInitialize]
         public void Init()
         {
+            mongo.DropCollection<MessageWrapper>();
             rs = new RequestStore(dtp.Object, qw.Object, log.Object, mongo,Container.GetInstance<IRequestMatcher>());
             rs.Start();
         }

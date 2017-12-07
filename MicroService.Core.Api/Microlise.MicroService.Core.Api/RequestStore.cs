@@ -95,35 +95,36 @@ namespace Microlise.MicroService.Core.Api
             }
         }
 
-        private Task waitLoopTask;
+        private Timer pollTimer;
+        private ulong lastId;
 
         public void Start()
         {
             logger.Trace(nameof(RequestStore) + "." + nameof(Start));
-            waitLoopTask = new Task(WaitLoop);
-            waitLoopTask.Start();
+            pollTimer = new Timer(PollForResponses, null, TimeSpan.FromMilliseconds(10), TimeSpan.FromMinutes(1));
         }
 
-        private void WaitLoop()
+        private void PollForResponses(object state)
         {
-            logger.Trace($"{nameof(RequestStore)}.{nameof(WaitLoop)}");
-            FindOptions<MessageWrapper> options =
-                new FindOptions<MessageWrapper> { CursorType = CursorType.TailableAwait, MaxAwaitTime = TimeSpan.FromHours(12) };
-
-            while (true)
+            try
             {
-                try
-                {
-                    IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
-                
-                    using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => true, options))
-                        cursor.ForEachAsync(mw => requestMatcher.RegisterMessageWrapper(mw.Uuid, mw));
-                }
-                catch (Exception ex)
-                {
-                    logger.Error($"{nameof(RequestStore)}.{nameof(WaitLoop)}", new LogItem("ExceptionMessage", ex.Message), new LogItem("Exception", ex.ToString));
-                    Thread.Sleep(1000);
-                }
+                IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
+
+                using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => mw.Sequence > lastId))
+                    cursor.ForEachAsync(mw =>
+                    {
+                        requestMatcher.RegisterMessageWrapper(mw.Uuid, mw);
+                        lastId = (ulong)mw.Id;
+                    });
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"{nameof(RequestStore)}.{nameof(PollForResponses)}",
+                    new LogItem("ExceptionMessage", ex.Message), new LogItem("Exception", ex.ToString));
+            }
+            finally
+            {
+                pollTimer.Change(TimeSpan.FromMilliseconds(10), TimeSpan.FromMinutes(1));
             }
         }
     }
