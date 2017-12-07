@@ -12,6 +12,7 @@ using Microlise.MicroService.Core.Api.HttpServer;
 using Microlise.MicroService.Core.Api.Utils;
 using Microlise.MicroService.Core.Data;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.WireProtocol.Messages.Encoders;
 using Newtonsoft.Json;
 
 namespace Microlise.MicroService.Core.Api
@@ -108,14 +109,12 @@ namespace Microlise.MicroService.Core.Api
         {
             try
             {
-                IMongoCollection<MessageWrapper> collection = mongo.GetCollection<MessageWrapper>();
-
-                using (IAsyncCursor<MessageWrapper> cursor = collection.FindSync(mw => mw.Sequence > lastId))
-                    cursor.ForEachAsync(mw =>
-                    {
-                        requestMatcher.RegisterMessageWrapper(mw.Uuid, mw);
-                        lastId = (ulong)mw.Id;
-                    });
+                foreach (MessageWrapper mw in mongo.Get<MessageWrapper>(mw => mw.Sequence > lastId))
+                {
+                    requestMatcher.RegisterMessageWrapper(mw.Uuid, mw);
+                    lastId = mw.Sequence;
+                    logger.Trace(nameof(RequestStore) + "." + nameof(PollForResponses), new LogItem("LastId", lastId));
+                }
             }
             catch (Exception ex)
             {

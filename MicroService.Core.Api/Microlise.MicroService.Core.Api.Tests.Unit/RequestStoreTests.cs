@@ -62,6 +62,29 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
         }
 
         [TestMethod]
+        public void PublishAndRespondWhenResponseIsVeryFastButDoItTwiceWithAGapInTheMiddle()
+        {
+            Guid uuid = Guid.NewGuid();
+            Message<string, string> needMessage = new Message<string, string> { Need = "Hello", Method = "Y", Uuid = uuid };
+
+            IHttpResponse response = new HttpResponse(dtp.Object);
+            mongo.Put(new MessageWrapper { Uuid = needMessage.Uuid, SolutionJson = JsonConvert.SerializeObject(new[] { "World" }) });
+            rs.PublishAndWaitForResponse(needMessage, HttpStatusCode.OK, response);
+            Assert.AreEqual(HttpStatusCode.OK, response.HttpStatusCode);
+
+            Thread.Sleep(1000);
+
+            uuid = Guid.NewGuid();
+            needMessage.Uuid = uuid;
+            //IHttpResponse response = new HttpResponse(dtp.Object);
+            mongo.Put(new MessageWrapper { Uuid = needMessage.Uuid, SolutionJson = JsonConvert.SerializeObject(new[] { "World" }) });
+            rs.PublishAndWaitForResponse(needMessage, HttpStatusCode.OK, response);
+            Assert.AreEqual(HttpStatusCode.OK, response.HttpStatusCode);
+
+        }
+
+
+        [TestMethod]
         public void PublishAndRespondWithComplexNeedAndObjectSolution()
         {
             Guid uuid = Guid.NewGuid();
