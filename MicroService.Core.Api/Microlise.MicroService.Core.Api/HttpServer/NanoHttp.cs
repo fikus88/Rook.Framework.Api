@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
@@ -108,9 +109,14 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                 int bytesReceived = s.Receive(buffer);
                 byte[] received = new byte[bytesReceived];
                 Array.Copy(buffer, 0, received, 0, bytesReceived);
+#if DEBUG
+                string receivedText = Encoding.ASCII.GetString(received);
+#endif
+
                 if (request == null)
                 {
                     int i;
+
                     if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) > 0)
                     {
                         try
@@ -129,8 +135,8 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                         {
                             int contentLength = int.Parse(request.RequestHeader["Content-Length"]);
                             content = new byte[contentLength];
-                            Array.Copy(received, i+5, content, 0, contentLength);
-                            contentOffset += contentLength;
+                            Array.Copy(received, i+5, content, 0, Math.Min(received.Length - (i + 5), contentLength));
+                            contentOffset += received.Length - (i + 5);
                         }
                         else
                             content = new byte[0];
@@ -148,6 +154,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                 }
                 if (request != null)
                 {
+                    
                     Array.Copy(received, 0, content, contentOffset, bytesReceived);
                     contentOffset += bytesReceived;
                     if (contentOffset >= content.Length - 1)

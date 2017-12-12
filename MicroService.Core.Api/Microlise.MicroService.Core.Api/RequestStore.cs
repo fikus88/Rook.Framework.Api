@@ -7,12 +7,9 @@ using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.ResponseHandlers;
 using System.Net;
-using System.Threading.Tasks;
 using Microlise.MicroService.Core.Api.HttpServer;
 using Microlise.MicroService.Core.Api.Utils;
 using Microlise.MicroService.Core.Data;
-using MongoDB.Driver;
-using MongoDB.Driver.Core.WireProtocol.Messages.Encoders;
 using Newtonsoft.Json;
 
 namespace Microlise.MicroService.Core.Api
@@ -35,7 +32,7 @@ namespace Microlise.MicroService.Core.Api
             IMongoStore mongo,
             IRequestMatcher requestMatcher)
         {
-            logger.Trace(nameof(RequestStore) + " constructor");
+            logger.Trace($"{nameof(RequestStore)} constructor");
             this.queueWrapper = queueWrapper;
             this.logger = logger;
             this.mongo = mongo;
@@ -101,7 +98,7 @@ namespace Microlise.MicroService.Core.Api
 
         public void Start()
         {
-            logger.Trace(nameof(RequestStore) + "." + nameof(Start));
+            logger.Trace($"{nameof(RequestStore)}.{nameof(Start)}");
             pollTimer = new Timer(PollForResponses, null, TimeSpan.FromMilliseconds(10), TimeSpan.FromMinutes(1));
         }
 
@@ -113,7 +110,7 @@ namespace Microlise.MicroService.Core.Api
                 {
                     requestMatcher.RegisterMessageWrapper(mw.Uuid, mw);
                     lastId = mw.Sequence;
-                    logger.Trace(nameof(RequestStore) + "." + nameof(PollForResponses), new LogItem("LastId", lastId));
+                    logger.Trace($"{nameof(RequestStore)}.{nameof(PollForResponses)}", new LogItem("LastId", lastId));
                 }
             }
             catch (Exception ex)
