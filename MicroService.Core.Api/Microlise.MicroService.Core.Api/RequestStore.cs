@@ -16,7 +16,7 @@ namespace Microlise.MicroService.Core.Api
 {
     public sealed class RequestStore : IRequestStore
     {
-        private const int MaxTimeToWaitForBusResponseInMilliseconds = 5000;
+        private readonly int busTimeoutMilliseconds;
 
         private readonly IQueueWrapper queueWrapper;
 
@@ -30,7 +30,8 @@ namespace Microlise.MicroService.Core.Api
             IQueueWrapper queueWrapper,
             ILogger logger,
             IMongoStore mongo,
-            IRequestMatcher requestMatcher)
+            IRequestMatcher requestMatcher,
+            IConfigurationManager config)
         {
             logger.Trace($"{nameof(RequestStore)} constructor");
             this.queueWrapper = queueWrapper;
@@ -38,6 +39,11 @@ namespace Microlise.MicroService.Core.Api
             this.mongo = mongo;
             this.requestMatcher = requestMatcher;
             this.dateTimeProvider = dateTimeProvider;
+            if (!int.TryParse(config.AppSettings["BusTimeoutMilliseconds"],
+                out busTimeoutMilliseconds))
+            {
+                busTimeoutMilliseconds = 5000;
+            }
         }
 
         public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
@@ -63,7 +69,7 @@ namespace Microlise.MicroService.Core.Api
 
                 queueWrapper.PublishMessage(message);
 
-                if (dataWaitHandle.WaitOne(MaxTimeToWaitForBusResponseInMilliseconds))
+                if (dataWaitHandle.WaitOne(busTimeoutMilliseconds))
                 {
                     List<ResponseError> errors = null;
                     if (dataWaitHandle.Errors != null)
