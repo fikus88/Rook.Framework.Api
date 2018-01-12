@@ -10,11 +10,12 @@ namespace Microlise.MicroService.Core.Api
     }
     public class ActivityHandlerAttribute : Attribute
     {
-        public ActivityHandlerAttribute(string ActivityName, HttpVerb verb, string path, string description = null)
+        public ActivityHandlerAttribute(string activityName, HttpVerb verb, string path, string description = null)
         {
             Verb = verb;
             Path = path;
             Description = description ?? $"{verb} handler for {path}";
+            ActivityName = activityName;
         }
 
         public string Description { get; }
