@@ -12,12 +12,14 @@ namespace Microlise.MicroService.Core.Api {
 			IService instance = Container.GetInstance<IService>();
 			INanoHttp httpServer = Container.GetInstance<INanoHttp>();
 			IRequestStore requestStore = Container.GetInstance<IRequestStore>();
+		    ActivityAuthorisationManager aam = Container.GetInstance<ActivityAuthorisationManager>();
 
 			Thread.CurrentThread.Name = $"{ServiceInfo.Name} Main Thread";
 
 			instance.Start();
 			httpServer.Start();
 			requestStore.Start();
+            aam.Initialise();
 		}
 	}
 }

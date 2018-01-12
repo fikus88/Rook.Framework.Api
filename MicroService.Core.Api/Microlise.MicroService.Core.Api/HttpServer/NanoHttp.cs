@@ -21,7 +21,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         private readonly int port;
         private readonly int backlog;
         private readonly int requestTimeout;
-        private CancellationTokenSource cts = new CancellationTokenSource();
+        private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken allocationCancellationToken;
 
         public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager, ILogger logger)
@@ -117,41 +117,13 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                 {
                     int i;
 
-                    if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) > 0)
-                    {
-                        try
-                        {
-                            request = new HttpRequest(received.SubArray(i + 1), requiresAuthorisation);
-                        }
-                        catch (SecurityTokenException ex)
-                        {
-                            s.Shutdown(SocketShutdown.Both);
-                            s.Dispose();
-                            logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", $"Authorisation required, but invalid token supplied ({ex.GetType()})"));
-                            return;
-                        }
-                        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Received request"), new LogItem("Verb", request.Verb.ToString), new LogItem("Path", request.Path));
-                        if (request.RequestHeader.ContainsKey("Content-Length"))
-                        {
-                            int contentLength = int.Parse(request.RequestHeader["Content-Length"]);
-                            content = new byte[contentLength];
-                            Array.Copy(received, i+5, content, 0, Math.Min(received.Length - (i + 5), contentLength));
-                            contentOffset += received.Length - (i + 5);
-                        }
-                        else
-                            content = new byte[0];
-
-                        if (requiresAuthorisation && request.SecurityToken == null)
-                        {
-                            s.Shutdown(SocketShutdown.Both);
-                            s.Dispose();
-                            logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", "Authorisation required, but no token provided"));
-                            return;
-                        }
-                        received = new byte[0];
-                        bytesReceived = 0;
-                    }
+                    // If we have a double CRLF then we have a complete header
+                    if ((i = received.FindPattern((byte) 13, (byte) 10, (byte) 13, (byte) 10)) > 0)
+                        if (!ParseHeader(s, i, ref request, ref received, ref content, ref contentOffset,
+                            ref bytesReceived)) return;
                 }
+
+                // We must have processed the header to have a request
                 if (request != null)
                 {
                     
@@ -177,6 +149,46 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                     }
                 }
             }
+        }
+
+        private bool ParseHeader(Socket s, int i, ref HttpRequest request, ref byte[] received, ref byte[] content,
+            ref int contentOffset, ref int bytesReceived)
+        {
+            try
+            {
+                request = new HttpRequest(received.SubArray(i + 1), requiresAuthorisation);
+            }
+            catch (SecurityTokenException ex)
+            {
+                s.Shutdown(SocketShutdown.Both);
+                s.Dispose();
+                logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
+                    new LogItem("Reason", $"Authorisation required, but invalid token supplied ({ex.GetType()})"));
+                return false;
+            }
+            logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Received request"),
+                new LogItem("Verb", request.Verb.ToString), new LogItem("Path", request.Path));
+            if (request.RequestHeader.ContainsKey("Content-Length"))
+            {
+                int contentLength = int.Parse(request.RequestHeader["Content-Length"]);
+                content = new byte[contentLength];
+                Array.Copy(received, i + 5, content, 0, Math.Min(received.Length - (i + 5), contentLength));
+                contentOffset += received.Length - (i + 5);
+            }
+            else
+                content = new byte[0];
+
+            if (requiresAuthorisation && request.SecurityToken == null)
+            {
+                s.Shutdown(SocketShutdown.Both);
+                s.Dispose();
+                logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
+                    new LogItem("Reason", "Authorisation required, but no token provided"));
+                return false;
+            }
+            received = new byte[0];
+            bytesReceived = 0;
+            return true;
         }
     }
 }

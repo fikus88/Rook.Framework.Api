@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.Application.Bus;
 using Microlise.MicroService.Core.Attributes;
 using Microlise.MicroService.Core.Application.MessageHandlers;
