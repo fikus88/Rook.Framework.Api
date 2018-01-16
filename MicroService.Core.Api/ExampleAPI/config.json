@@ -6,5 +6,6 @@
   "RequiresAuthorisation": "false",
   "Port": 81,
   "Backlog": 32,
-  "IdentityServerAddress": "192.168.120.138" 
+  "IdentityServerAddress": "192.168.120.138",
+  "IdentityServerPath ": "/identity/identity"
 }
