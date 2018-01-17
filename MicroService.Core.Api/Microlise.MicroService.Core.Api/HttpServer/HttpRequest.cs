@@ -79,14 +79,14 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                     }
                 }
             }
-
         }
 
         private readonly JwtSecurityTokenHandler securityTokenHandler = new JwtSecurityTokenHandler();
 
         private static TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
         {
-            IssuerSigningKeys = GetSigningKeys()
+            IssuerSigningKeys = GetSigningKeys(),
+            ValidateAudience = false
         };
 
         public HttpRequest(byte[] headerBytes, bool authorisationRequired)

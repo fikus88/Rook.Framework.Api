@@ -9,6 +9,7 @@ namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
     [ActivityHandler("GetApiDescription", HttpVerb.Get, "description", "Describes the API based on descriptions provided in the ActivityHandlerAttribute constructor for each VerbHandler class")]
     internal class GetDescription : IActivityHandler
     {
+        
         public void Handle(IHttpRequest request, IHttpResponse response)
         {
             Dictionary<Type, ActivityHandlerAttribute[]> handlers = Container.FindAttributedTypes<ActivityHandlerAttribute>();
