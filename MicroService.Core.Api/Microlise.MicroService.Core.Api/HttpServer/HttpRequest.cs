@@ -133,7 +133,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             {
                 socket.Connect(configurationManager.AppSettings["IdentityServerAddress"], 80);
                 // Use HTTP/0.9, then we don't need to include a framework for this one little requirement
-                socket.Send(Encoding.ASCII.GetBytes("GET /identity/identity/.well-known/jwks\r\n"));
+                socket.Send(Encoding.ASCII.GetBytes($"GET {configurationManager.AppSettings["IdentityServerPath"]}/.well-known/jwks\r\n"));
                 Stopwatch w = Stopwatch.StartNew();
                 while (socket.Connected && w.ElapsedMilliseconds < 100)
                 {
