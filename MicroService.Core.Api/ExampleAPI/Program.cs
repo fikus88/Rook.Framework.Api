@@ -14,14 +14,13 @@ namespace Microlise.Example.ExampleAPI
             Container.Scan(Assembly.GetEntryAssembly(), typeof(IApiService).Assembly, typeof(IService).Assembly);
 #else
 			Container.Scan(Assembly.GetEntryAssembly(), typeof(IApiService).GetTypeInfo().Assembly, typeof(IService).GetTypeInfo().Assembly);
-#endif
-
-			IApiService apiService = Container.GetInstance<IApiService>();
+#endif            
+            IApiService apiService = Container.GetInstance<IApiService>();
 			apiService.Start();
 
-			Thread.CurrentThread.IsBackground = true;
+		    Thread.CurrentThread.IsBackground = true;
 
-			while (true)
+            while (true)
 				Thread.Sleep(int.MaxValue);
 		}
     }
