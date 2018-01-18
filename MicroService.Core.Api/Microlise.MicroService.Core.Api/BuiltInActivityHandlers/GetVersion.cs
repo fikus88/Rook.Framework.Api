@@ -1,5 +1,4 @@
-﻿using Microlise.MicroService.Core.Services;
-using Microlise.MicroService.Core.Api.HttpServer;
+﻿using Microlise.MicroService.Core.Api.HttpServer;
 using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
@@ -11,5 +10,8 @@ namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
         {
             response.SetObjectContent(new { version = ServiceInfo.Version });
         }
+
+        public dynamic ExampleRequestDocument { get; } = null;
+        public dynamic ExampleResponseDocument { get; } = null;
     }
 }

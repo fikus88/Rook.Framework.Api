@@ -49,7 +49,7 @@ namespace Microlise.MicroService.Core.Api
         public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
         public static List<string> Methods = new List<string>();
 
-        public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution)
+        public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null)
         {
             Guid requestId = CreateUniqueId.Invoke();
             if (message.Uuid == Guid.Empty)
@@ -63,7 +63,7 @@ namespace Microlise.MicroService.Core.Api
 
             logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
 
-            using (DataWaitHandle dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset))
+            using (DataWaitHandle dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset,solutionMatchFunction))
             {
                 requestMatcher.RegisterWaitHandle(message.Uuid, dataWaitHandle, responseStyle);
 

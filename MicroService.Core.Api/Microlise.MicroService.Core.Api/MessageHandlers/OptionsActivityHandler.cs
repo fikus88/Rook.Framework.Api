@@ -9,5 +9,8 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers {
             response.Content = null;
             response.HttpStatusCode = HttpStatusCode.OK;
         }
+
+        public dynamic ExampleRequestDocument { get; } = null;
+        public dynamic ExampleResponseDocument { get; } = null;
     }
 }

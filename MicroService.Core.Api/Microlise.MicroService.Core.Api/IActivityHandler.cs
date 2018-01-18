@@ -10,6 +10,7 @@ namespace Microlise.MicroService.Core.Api
     {
         void Handle(IHttpRequest request, IHttpResponse response);
 
-        //List<Tuple<string, string>> CreateExampleInputsAndOutputs();
+        dynamic ExampleRequestDocument { get; }
+        dynamic ExampleResponseDocument { get; }
     }
 }

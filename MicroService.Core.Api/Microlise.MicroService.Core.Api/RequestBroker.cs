@@ -109,11 +109,11 @@ namespace Microlise.MicroService.Core.Api
 
             /*
              * if any non-tokenised path field doesn't match, bomb out
-             * These should match
+             * These two should match
              * /link/{orgId}/xyz/{userId}
              * /link/anything/xyz/blah?hello=world&etc=etc
              * 
-             * These should not
+             * These two should not
 		     * /link/{orgId}/xyz/{userId}
 		     * /link/{orgId}/abc/{userId}
              */

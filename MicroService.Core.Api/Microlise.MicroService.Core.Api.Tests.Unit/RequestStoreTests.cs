@@ -23,14 +23,14 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
         private readonly Mock<IQueueWrapper> qw = new Mock<IQueueWrapper>();
         private readonly Mock<ILogger> log = new Mock<ILogger>();
         private readonly MongoStore mongo = Container.GetInstance<MongoStore>();
-        private readonly Mock<IConfigurationManager> cm = new Mock<IConfigurationManager>();
+        private readonly IConfigurationManager cm = Container.GetInstance<IConfigurationManager>();
         private RequestStore rs;
 
         [TestInitialize]
         public void Init()
         {
             mongo.DropCollection<MessageWrapper>();
-            rs = new RequestStore(dtp.Object, qw.Object, log.Object, mongo,Container.GetInstance<IRequestMatcher>(),cm.Object);
+            rs = new RequestStore(dtp.Object, qw.Object, log.Object, mongo,Container.GetInstance<IRequestMatcher>(),cm);
             rs.Start();
         }
 

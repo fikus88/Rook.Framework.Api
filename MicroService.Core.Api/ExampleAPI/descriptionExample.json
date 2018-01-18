@@ -1,0 +1,118 @@
+﻿[
+  {
+    "path": "/user/{userId}",
+    "verb": "Get",
+    "description": "Get handler for /user/{userId}",
+    "expectedParameters": [],
+    "exampleCall": "/user/{userId}",
+    "exampleRequestDocument": null,
+    "exampleResponseDocument": {
+      "userId": "d65e7399-a55b-4ba6-9343-a4f26ca690be",
+      "userPassword": "482c811da5d5b4bc6d497ffa98491e38",
+      "userLogin": "dave@tmc",
+      "lastLoggedIn": "2018-01-08T12:03:25"
+    }
+  },
+  {
+    "path": "/widget/owner/{ownerId}",
+    "verb": "Get",
+    "description": "Get handler for /widget/owner/{ownerId}",
+    "expectedParameters": [],
+    "exampleCall": "/widget/owner/{ownerId}",
+    "exampleRequestDocument": null,
+    "exampleResponseDocument": [
+      {
+        "id": "d611bef2-572f-4dd3-b850-7e2032401e93",
+        "name": "NewWidget123",
+        "owner": "7ea1ceba-2608-4caa-8fec-906f51d49968",
+        "version": "1.43.2.5",
+        "width": 145.2,
+        "weight": 10
+      },
+      {
+        "id": "fc4400a4-0ea6-4e5a-bf7e-519673458b4b",
+        "name": "OldWidget2",
+        "owner": "7ea1ceba-2608-4caa-8fec-906f51d49968",
+        "version": "1.0.0.2",
+        "width": 15.7,
+        "weight": 3
+      }
+    ]
+  },
+  {
+    "path": "/widget/{widgetId}",
+    "verb": "Post",
+    "description": "Puts a Widget in the Widget Store",
+    "expectedParameters": [ "name", "weight" ],
+    "exampleCall": "/widget/{widgetId}?name=<value>&weight=<value>",
+    "exampleRequestDocument": {
+      "name": "NewWidget123",
+      "owner": "68e38528-6edf-4f45-94e4-923ded6fc366",
+      "version": "1.43.2.5",
+      "width": 145.2,
+      "weight": 10
+    },
+    "exampleResponseDocument": {
+      "id": "b0c1f0a2-a672-4046-8b46-b0340a8ef917",
+      "name": "NewWidget123",
+      "owner": "a4e28768-e200-47df-be9b-ae4d387cd786",
+      "version": "1.43.2.5",
+      "width": 145.2,
+      "weight": 10
+    }
+  },
+  {
+    "path": "description",
+    "verb": "Get",
+    "description": "Describes the API based on descriptions provided in the ActivityHandlerAttribute constructor for each VerbHandler class",
+    "expectedParameters": [],
+    "exampleCall": "description",
+    "exampleRequestDocument": null,
+    "exampleResponseDocument": [
+      {
+        "path": "apath/{someValue}",
+        "verb": "Eat",
+        "description": "The Description",
+        "expectedParameters": [ "hello", "world" ],
+        "exampleCall": "apath/{someValue}?hello=<value>&world=<value>",
+        "exampleRequestDocument": {},
+        "exampleResponseDocument": {}
+      },
+      {
+        "path": "{someOtherValue}/something",
+        "verb": "Drink",
+        "description": "Another Description",
+        "expectedParameters": [],
+        "exampleCall": "{someOtherValue}/something",
+        "exampleRequestDocument": {
+          "fish": "Haddock",
+          "banana": true
+        },
+        "exampleResponseDocument": {
+          "id": "e5f013c7-e29f-474b-93ed-e84ff4d54cb4",
+          "fish": "Haddock",
+          "banana": true,
+          "createdAt": "2018-01-18T12:03:25"
+        }
+      }
+    ]
+  },
+  {
+    "path": "favicon.ico",
+    "verb": "Get",
+    "description": "Sends a NotFound response",
+    "expectedParameters": [],
+    "exampleCall": "favicon.ico",
+    "exampleRequestDocument": null,
+    "exampleResponseDocument": null
+  },
+  {
+    "path": "version",
+    "verb": "Get",
+    "description": "Gets the version of the service",
+    "expectedParameters": [],
+    "exampleCall": "version",
+    "exampleRequestDocument": null,
+    "exampleResponseDocument": null
+  }
+]
