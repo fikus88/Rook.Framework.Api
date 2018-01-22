@@ -3,7 +3,7 @@ using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
 {
-    [ActivityHandler("GetApiVersion", HttpVerb.Get, "version", "Gets the version of the service")]
+    [ActivityHandler("GetApiVersion", HttpVerb.Get, "version", "Gets the version of the service", SkipAuthorisation = true)]
     internal class GetVersion : IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)

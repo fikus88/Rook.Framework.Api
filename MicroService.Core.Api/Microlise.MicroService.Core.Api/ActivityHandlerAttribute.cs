@@ -38,5 +38,6 @@ namespace Microlise.MicroService.Core.Api
         /// </summary>
         public string[] ExpectedParameters { get; }
         public bool AsSingleton { get; set; }
+        public bool SkipAuthorisation { get; set; }
     }
 }

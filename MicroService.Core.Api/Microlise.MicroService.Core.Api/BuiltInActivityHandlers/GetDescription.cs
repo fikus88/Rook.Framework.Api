@@ -7,7 +7,7 @@ using Microlise.MicroService.Core.Api.HttpServer;
 
 namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
 {
-    [ActivityHandler("GetApiDescription", HttpVerb.Get, "description", "Describes the API based on descriptions provided in the ActivityHandlerAttribute constructor for each VerbHandler class")]
+    [ActivityHandler("GetApiDescription", HttpVerb.Get, "description", "Describes the API based on descriptions provided in the ActivityHandlerAttribute constructor for each VerbHandler class", SkipAuthorisation = true)]
     internal class GetDescription : IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)

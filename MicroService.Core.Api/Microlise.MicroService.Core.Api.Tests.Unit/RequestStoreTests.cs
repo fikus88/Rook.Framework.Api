@@ -83,8 +83,7 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
             Assert.AreEqual(HttpStatusCode.OK, response.HttpStatusCode);
 
         }
-
-
+        
         [TestMethod]
         public void PublishAndRespondWithComplexNeedAndObjectSolution()
         {

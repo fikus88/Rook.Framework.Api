@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
+using Microlise.MicroService.Core.Api.BuiltInActivityHandlers;
 using Microlise.MicroService.Core.Api.MessageHandlers;
 using Microlise.MicroService.Core.Common;
 
@@ -31,14 +32,10 @@ namespace Microlise.MicroService.Core.Api
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds), new LogItem("FoundHandler", handler != null ? handler.GetType().Name : "null"));
 
             if (handler == null)
-            {
                 if (request.Verb == HttpVerb.Options)
-                {
                     handler = Container.GetInstance<OptionsActivityHandler>();
-                }
                 else
                     return HttpResponse.MethodNotFound;
-            }
 
             JwtSecurityToken token = request.SecurityToken;
             if (!activityAuthorisationManager.CheckAuthorisation(token, attribute))

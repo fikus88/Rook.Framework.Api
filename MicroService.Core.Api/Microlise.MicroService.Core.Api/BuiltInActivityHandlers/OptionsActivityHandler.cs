@@ -1,7 +1,8 @@
 using System.Net;
 using Microlise.MicroService.Core.Api.HttpServer;
 
-namespace Microlise.MicroService.Core.Api.MessageHandlers {
+namespace Microlise.MicroService.Core.Api.BuiltInActivityHandlers
+{
     internal class OptionsActivityHandler : IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)

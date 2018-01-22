@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.Api.MessageHandlers;
 using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Services;

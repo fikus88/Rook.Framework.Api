@@ -88,7 +88,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             IssuerSigningKeys = GetSigningKeys(),
             ValidateAudience = false,
             ValidateIssuer = false,
-            ValidateActor=false
+            ValidateActor = false
         };
 
         public HttpRequest(byte[] headerBytes, bool authorisationRequired)
@@ -120,6 +120,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             if (authorisationRequired && RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
             {
                 string payload = RequestHeader["Authorization"].Substring(7);
+
                 securityTokenHandler.ValidateToken(payload, TokenValidationParameters,
                     out SecurityToken token);
 
