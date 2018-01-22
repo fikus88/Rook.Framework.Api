@@ -12,6 +12,7 @@ using Microlise.MicroService.Core.IoC;
 namespace Microlise.MicroService.Core.Api.MessageHandlers
 {
     [Handler("RegisterActivityForAuthorisation", AcceptanceBehaviour = AcceptanceBehaviour.OnlyWithSolution)]
+    [Handler("AuthoriseRoleToPerformActivity", AcceptanceBehaviour = AcceptanceBehaviour.OnlyWithSolution)]
     internal class ActivityAuthorisationManager : IActivityAuthorisationManager, IMessageHandler2<string, string>
     {
         private readonly IQueueWrapper queue;
