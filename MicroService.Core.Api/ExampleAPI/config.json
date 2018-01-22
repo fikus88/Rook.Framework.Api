@@ -7,5 +7,6 @@
   "Port": 81,
   "Backlog": 32,
   "IdentityServerAddress": "192.168.120.138",
-  "IdentityServerPath ": "/identity/identity"
+  "IdentityServerPath ": "/identity/identity",
+  "IdentityServerPort": 80
 }

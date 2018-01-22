@@ -86,7 +86,9 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         private static TokenValidationParameters TokenValidationParameters { get; } = new TokenValidationParameters
         {
             IssuerSigningKeys = GetSigningKeys(),
-            ValidateAudience = false
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateActor=false
         };
 
         public HttpRequest(byte[] headerBytes, bool authorisationRequired)
@@ -131,7 +133,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             List<byte> longBuffer = new List<byte>();
             using (Socket socket = new Socket(SocketType.Stream, ProtocolType.IP) { ReceiveBufferSize = 8192, LingerState = new LingerOption(false, 0), NoDelay = false })
             {
-                socket.Connect(configurationManager.AppSettings["IdentityServerAddress"], 80);
+                socket.Connect(configurationManager.AppSettings["IdentityServerAddress"], UInt16.Parse(configurationManager.AppSettings["IdentityServerPort"]));
                 // Use HTTP/0.9, then we don't need to include a framework for this one little requirement
                 socket.Send(Encoding.ASCII.GetBytes($"GET {configurationManager.AppSettings["IdentityServerPath"]}/.well-known/jwks\r\n"));
                 Stopwatch w = Stopwatch.StartNew();
