@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using Microlise.MicroService.Core.Api.Utils;
@@ -33,7 +34,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         public string Path { get; }
         public string HttpVersion { get; }
         public CaseInsensitiveDictionary RequestHeader { get; } = new CaseInsensitiveDictionary();
-        public JwtSecurityToken SecurityToken { get; }
+        public JwtSecurityToken SecurityToken { get; set; }
         public byte[] Body { get; internal set; }
         public AutoDictionary<string, string> Parameters { get; private set; }
 
@@ -71,13 +72,18 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                 if (pathParts.Length > 1)
                 {
                     string paramsString = pathParts[1];
-                    string[] parameters = paramsString.Split('&');
-                    foreach (string parameter in parameters)
-                    {
-                        string[] parts = parameter.Split('=');
-                        if (parts.Length > 1) Parameters.Add(parts[0], Uri.UnescapeDataString(parts[1]));
-                    }
+                    ParseParameters(paramsString);
                 }
+            }
+        }
+
+        private void ParseParameters(string paramsString)
+        {
+            string[] parameters = paramsString.Split('&');
+            foreach (string parameter in parameters)
+            {
+                string[] parts = parameter.Split('=');
+                if (parts.Length > 1) Parameters.Add(parts[0], Uri.UnescapeDataString(parts[1]));
             }
         }
 
@@ -91,7 +97,10 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             ValidateActor = false
         };
 
-        public HttpRequest(byte[] headerBytes, bool authorisationRequired)
+        public X509Certificate ServerCertificate { get; set; }
+        public X509Certificate ClientCertificate { get; set; }
+
+        public HttpRequest(byte[] headerBytes)
         {
             string data = Encoding.ASCII.GetString(headerBytes);
 
@@ -113,18 +122,31 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                 RequestHeader.Add(key, value);
             }
 
+
             // Uri
             Uri = new Uri("http://" + RequestHeader["Host"] + Path);
+        }
+
+        public void FinaliseLoad(bool authorisationRequired)
+        {
+            if (RequestHeader["Content-Type"] == "application/x-www-form-urlencoded")
+            {
+                // body contains &-separated parameters
+                ParseParameters(Encoding.ASCII.GetString(Body));
+            }
 
             // decode JWT
-            if (authorisationRequired && RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
+            if (authorisationRequired)
             {
-                string payload = RequestHeader["Authorization"].Substring(7);
+                if (RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
+                {
+                    string payload = RequestHeader["Authorization"].Substring(7);
 
-                securityTokenHandler.ValidateToken(payload, TokenValidationParameters,
-                    out SecurityToken token);
+                    securityTokenHandler.ValidateToken(payload, TokenValidationParameters,
+                        out SecurityToken token);
 
-                SecurityToken = (JwtSecurityToken)token;
+                    SecurityToken = (JwtSecurityToken)token;
+                }
             }
         }
 

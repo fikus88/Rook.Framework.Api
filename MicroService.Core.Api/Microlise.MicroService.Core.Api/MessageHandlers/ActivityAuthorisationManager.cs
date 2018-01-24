@@ -33,11 +33,12 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers
 
             // Send a "Register" message on the bus for each activity
             foreach (KeyValuePair<Type, ActivityHandlerAttribute[]> keyValuePair in attributes)
-            foreach (ActivityHandlerAttribute attribute in keyValuePair.Value)
-                queue.PublishMessage(new Message<string, string>() {
-                    Method = "RegisterActivityForAuthorisation",
-                    Need = attribute.ActivityName
-                });
+                foreach (ActivityHandlerAttribute attribute in keyValuePair.Value.Where(a => a.ActivityName != null && a.SkipAuthorisation == false))
+                    queue.PublishMessage(new Message<string, string>
+                    {
+                        Method = "RegisterActivityForAuthorisation",
+                        Need = attribute.ActivityName
+                    });
         }
 
         public CompletionAction Handle(Message<string, string> message)

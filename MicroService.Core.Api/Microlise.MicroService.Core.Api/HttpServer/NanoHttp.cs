@@ -1,8 +1,12 @@
 ﻿using Microlise.MicroService.Core.Common;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +17,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
     public class NanoHttp : INanoHttp
     {
         private TcpListener listener;
+        private TcpListener tlsListener;
         private Task allocator;
         private readonly TaskFactory processorFactory = new TaskFactory();
         private readonly IRequestBroker requestBroker;
@@ -23,6 +28,8 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         private readonly int requestTimeout;
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken allocationCancellationToken;
+        private readonly int tlsPort;
+        private readonly X509Certificate2 myCert = new X509Certificate2(File.ReadAllBytes("g:\\localhost.pfx"), "password123");
 
         public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager, ILogger logger)
         {
@@ -33,6 +40,9 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
             if (!int.TryParse(configurationManager.AppSettings["Port"], out port))
                 port = 80;
+
+            if (!int.TryParse(configurationManager.AppSettings["TlsPort"], out tlsPort))
+                tlsPort = -1;
 
             if (!int.TryParse(configurationManager.AppSettings["Backlog"], out backlog))
                 backlog = 16;
@@ -45,7 +55,13 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         public void Start()
         {
             listener = new TcpListener(new IPEndPoint(IPAddress.Any, port));
-            listener.Start(backlog);
+            listener.Start((int)(backlog * (tlsPort > 0 ? 0.5 : 1)));
+
+            if (tlsPort > 0)
+            {
+                tlsListener = new TcpListener(new IPEndPoint(IPAddress.Any, tlsPort));
+                tlsListener.Start((int)(backlog * 0.5));
+            }
 
             logger.Info($"{nameof(NanoHttp)}.{nameof(Start)}", new LogItem("Event", "Listener started"), new LogItem("Port", port), new LogItem("Backlog", backlog));
 
@@ -56,7 +72,6 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
         public void Stop()
         {
-
             cts.Cancel();
             allocator = null;
         }
@@ -67,12 +82,12 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             {
                 while (true)
                 {
-                    while (!listener.Pending())
+                    while (!listener.Pending() && !tlsListener.Pending())
                     {
                         ((CancellationToken)cancellationToken).ThrowIfCancellationRequested();
                         Thread.Sleep(1);
                     }
-                    Socket s = listener.AcceptSocketAsync().Result;
+                    Socket s = listener.Pending() ? listener.AcceptSocketAsync().Result : tlsListener.AcceptSocketAsync().Result;
                     logger.Trace($"{nameof(NanoHttp)}.{nameof(AllocationMain)}", new LogItem("Event", "Accepted socket"),
                         new LogItem("Client", s.RemoteEndPoint.ToString));
                     processorFactory.StartNew(() => Processor(s), allocationCancellationToken);
@@ -94,43 +109,81 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
             Stopwatch connectionTimer = Stopwatch.StartNew();
 
-            while (true)
+            using (NetworkStream ns = new NetworkStream(s))
             {
-                while (s.Available == 0 && connectionTimer.ElapsedMilliseconds < requestTimeout) Thread.Sleep(1);
-
-                if (s.Available == 0)
+                Stream dataStream = ns;
+                bool tlsConnection = ((IPEndPoint)s.LocalEndPoint).Port == tlsPort;
+                if (tlsConnection)
                 {
-                    s.Shutdown(SocketShutdown.Both);
-                    s.Dispose();
-                    logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", $"No request received in {requestTimeout}ms"));
-                    return;
+                    dataStream = new SslStream(dataStream);
+
+                    ((SslStream)dataStream).AuthenticateAsServerAsync(myCert, false,
+                        SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, false).Wait(100);
                 }
 
-                int bytesReceived = s.Receive(buffer);
-                byte[] received = new byte[bytesReceived];
-                Array.Copy(buffer, 0, received, 0, bytesReceived);
+                while (true)
+                {
+                    int bytesReceived = dataStream.Read(buffer, 0, buffer.Length);// s.Receive(buffer);
+                    while (bytesReceived == 0 && connectionTimer.ElapsedMilliseconds < requestTimeout) Thread.Sleep(1);
+
+                    if (bytesReceived == 0)
+                    {
+                        s.Shutdown(SocketShutdown.Both);
+                        s.Dispose();
+                        dataStream.Dispose();
+                        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", $"No request received in {requestTimeout}ms"));
+                        return;
+                    }
+
+
+                    byte[] received = new byte[bytesReceived];
+                    Array.Copy(buffer, 0, received, 0, bytesReceived);
 #if DEBUG
-                string receivedText = Encoding.ASCII.GetString(received);
+                    string receivedText = Encoding.ASCII.GetString(received);
 #endif
 
-                if (request == null)
-                {
-                    int i;
+                    if (request == null)
+                    {
+                        int i;
 
-                    // If we have a double CRLF then we have a complete header
-                    if ((i = received.FindPattern((byte) 13, (byte) 10, (byte) 13, (byte) 10)) > 0)
-                        if (!ParseHeader(s, i, ref request, ref received, ref content, ref contentOffset,
-                            ref bytesReceived)) return;
-                }
+                        // If we have a double CRLF then we have a complete header, otherwise keep looping
+                        if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) == -1) continue;
 
-                // We must have processed the header to have a request
-                if (request != null)
-                {
-                    
+                        request = ParseHeader(i, ref received, ref content, ref contentOffset, ref bytesReceived);
+
+                        if (request == null)
+                        {
+                            s.Shutdown(SocketShutdown.Both);
+                            s.Dispose();
+                            dataStream.Dispose();
+                            return;
+                        }
+
+                        if (tlsConnection)
+                        {
+                            request.ServerCertificate = ((SslStream)dataStream).LocalCertificate;
+                            request.ClientCertificate = ((SslStream)dataStream).RemoteCertificate;
+                        }
+                    }
+
                     Array.Copy(received, 0, content, contentOffset, bytesReceived);
                     contentOffset += bytesReceived;
                     if (contentOffset >= content.Length - 1)
                     {
+                        request.FinaliseLoad(requiresAuthorisation);
+                        // Completed loading body, which could have urlencoded content :(
+                        request.FinaliseLoad(requiresAuthorisation);
+
+                        if (requiresAuthorisation && request.SecurityToken == null)
+                        {
+                            logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
+                                new LogItem("Reason", "Authorisation required, but no token provided"));
+                            s.Shutdown(SocketShutdown.Both);
+                            s.Dispose();
+                            dataStream.Dispose();
+                            return;
+                        }
+
                         request.Body = content;
                         logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest started"));
                         Stopwatch responseTimer = Stopwatch.StartNew();
@@ -141,9 +194,12 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                         response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS");
                         response.Headers.Add("Access-Control-Allow-Headers", "authorization");
 
-                        s.Send(response.ToByteArray());
+                        byte[] outBuffer = response.ToByteArray();
+                        dataStream.Write(outBuffer, 0, outBuffer.Length);
+                        dataStream.Flush();                        
                         s.Shutdown(SocketShutdown.Both);
                         s.Dispose();
+                        dataStream.Dispose();
                         logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", "Response complete"));
                         return;
                     }
@@ -151,20 +207,19 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             }
         }
 
-        private bool ParseHeader(Socket s, int i, ref HttpRequest request, ref byte[] received, ref byte[] content,
-            ref int contentOffset, ref int bytesReceived)
+        private HttpRequest ParseHeader(int i, ref byte[] received, ref byte[] content, ref int contentOffset, ref int bytesReceived)
         {
+            HttpRequest request;
             try
             {
-                request = new HttpRequest(received.SubArray(i + 1), requiresAuthorisation);
+                i += 1;
+                request = new HttpRequest(received.SubArray(i));
             }
             catch (SecurityTokenException ex)
             {
-                s.Shutdown(SocketShutdown.Both);
-                s.Dispose();
                 logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
                     new LogItem("Reason", $"Authorisation required, but invalid token supplied ({ex.GetType()})"));
-                return false;
+                return null;
             }
             logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Received request"),
                 new LogItem("Verb", request.Verb.ToString), new LogItem("Path", request.Path));
@@ -172,23 +227,17 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             {
                 int contentLength = int.Parse(request.RequestHeader["Content-Length"]);
                 content = new byte[contentLength];
-                Array.Copy(received, i + 5, content, 0, Math.Min(received.Length - (i + 5), contentLength));
-                contentOffset += received.Length - (i + 5);
+                i += 4;
+                Array.Copy(received, i, content, 0, Math.Min(received.Length - i, contentLength));
+                contentOffset += received.Length - i;
             }
             else
                 content = new byte[0];
 
-            if (requiresAuthorisation && request.SecurityToken == null)
-            {
-                s.Shutdown(SocketShutdown.Both);
-                s.Dispose();
-                logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
-                    new LogItem("Reason", "Authorisation required, but no token provided"));
-                return false;
-            }
+            
             received = new byte[0];
             bytesReceived = 0;
-            return true;
+            return request;
         }
     }
 }
