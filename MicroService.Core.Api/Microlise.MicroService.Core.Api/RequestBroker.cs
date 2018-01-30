@@ -24,7 +24,7 @@ namespace Microlise.MicroService.Core.Api
             this.activityAuthorisationManager = activityAuthorisationManager;
         }
 
-        public HttpResponse HandleRequest(HttpRequest request)
+        public IHttpResponse HandleRequest(IHttpRequest request)
         {
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
             Stopwatch timer = Stopwatch.StartNew();
@@ -40,12 +40,12 @@ namespace Microlise.MicroService.Core.Api
             JwtSecurityToken token = request.SecurityToken;
             if (!activityAuthorisationManager.CheckAuthorisation(token, attribute))
             {
-                HttpResponse unauthorisedResponse = Container.GetNewInstance<HttpResponse>();
+                IHttpResponse unauthorisedResponse = Container.GetNewInstance<IHttpResponse>();
                 unauthorisedResponse.HttpStatusCode = HttpStatusCode.Unauthorized;
                 return unauthorisedResponse;
             }
 
-            HttpResponse response = Container.GetNewInstance<HttpResponse>();
+            IHttpResponse response = Container.GetNewInstance<IHttpResponse>();
 
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle called"));
             timer.Restart();
@@ -56,7 +56,7 @@ namespace Microlise.MicroService.Core.Api
 
         private readonly Dictionary<Type, IActivityHandler> singletonCache = new Dictionary<Type, IActivityHandler>();
 
-        private IActivityHandler GetRequestHandler(HttpRequest request, out ActivityHandlerAttribute activityHandler)
+        private IActivityHandler GetRequestHandler(IHttpRequest request, out ActivityHandlerAttribute activityHandler)
         {
             activityHandler = null;
             bool Predicate(ActivityHandlerAttribute attr) => RequestMatchesAttribute(request, attr);
@@ -89,7 +89,7 @@ namespace Microlise.MicroService.Core.Api
             return instance;
         }
 
-        private bool RequestMatchesAttribute(HttpRequest request, ActivityHandlerAttribute attribute)
+        private bool RequestMatchesAttribute(IHttpRequest request, ActivityHandlerAttribute attribute)
         {
             if (request.Verb != attribute.Verb) return false;
 

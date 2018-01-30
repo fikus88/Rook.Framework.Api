@@ -25,6 +25,8 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         /// </summary>
         /// <param name="content"></param>
         void SetObjectContent(object content);
+
+        byte[] ToByteArray();
     }
 
     public sealed class HttpResponse : IHttpResponse
@@ -78,7 +80,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 			Content = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content));
 		}
 
-		internal byte[] ToByteArray()
+        public byte[] ToByteArray()
 		{
 			StringBuilder responseString = new StringBuilder();
 			responseString.Append($"HTTP/1.1 {(int)HttpStatusCode} {Enum.GetName(typeof(HttpStatusCode), HttpStatusCode)}\r\n");
