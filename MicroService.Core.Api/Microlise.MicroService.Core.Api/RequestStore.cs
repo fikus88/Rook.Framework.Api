@@ -105,7 +105,7 @@ namespace Microlise.MicroService.Core.Api
         public void Start()
         {
             logger.Trace($"{nameof(RequestStore)}.{nameof(Start)}");
-            pollTimer = new Timer(PollForResponses, null, TimeSpan.FromMilliseconds(10), TimeSpan.FromMinutes(1));
+            pollTimer = new Timer(PollForResponses, null, TimeSpan.FromMilliseconds(50), TimeSpan.FromMinutes(1));
         }
 
         private void PollForResponses(object state)

@@ -16,7 +16,7 @@ namespace Microlise.MicroService.Core.Api
         dynamic ExampleRequestDocument { get; }
         
         /// <summary>
-        /// Self-documenting property: An example of the document expected to be passed with the request
+        /// Self-documenting property: An example of the document expected to be passed in the response
         /// </summary>
         dynamic ExampleResponseDocument { get; }
     }
