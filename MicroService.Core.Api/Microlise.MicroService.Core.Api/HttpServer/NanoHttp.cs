@@ -29,7 +29,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken allocationCancellationToken;
         private readonly int tlsPort;
-        private readonly X509Certificate2 myCert = new X509Certificate2(File.ReadAllBytes("g:\\localhost.pfx"), "password123");
+        private readonly X509Certificate2 myCert = null;
 
         public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager, ILogger logger)
         {
@@ -50,6 +50,8 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             if (!int.TryParse(configurationManager.AppSettings["RequestTimeout"], out requestTimeout))
                 requestTimeout = 500;
 
+            if (configurationManager.AppSettings.ContainsKey("CertificateLocation"))
+                myCert = new X509Certificate2(File.ReadAllBytes(configurationManager.AppSettings["CertificateLocation"]));
         }
 
         public void Start()
