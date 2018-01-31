@@ -54,7 +54,7 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
             Assert.IsNotNull(broker.ReceivedRequest);
             Assert.AreEqual(HttpVerb.Get, broker.Verb);
             Assert.AreEqual("/users/authenticate", broker.Path);
-            Assert.AreEqual(0, broker.Body.Length);            
+            Assert.AreEqual(0, broker.Body.Length);
         }
 
         [TestMethod]
@@ -223,7 +223,7 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
 
         public string Path { get; set; }
 
-        public HttpRequest ReceivedRequest { get; set; }
+        public IHttpRequest ReceivedRequest { get; set; }
 
         public EventWaitHandle WaitHandle;
 
@@ -232,7 +232,7 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
             WaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
         }
 
-        public HttpResponse HandleRequest(HttpRequest header)
+        public IHttpResponse HandleRequest(IHttpRequest header)
         {
             Body = header.Body;
             Path = header.Path;

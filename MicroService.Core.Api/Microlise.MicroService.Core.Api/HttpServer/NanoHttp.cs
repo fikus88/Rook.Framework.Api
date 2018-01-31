@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microlise.MicroService.Core.IoC;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microlise.MicroService.Core.Api.HttpServer
@@ -29,7 +30,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken allocationCancellationToken;
         private readonly int tlsPort;
-        private readonly X509Certificate2 myCert = new X509Certificate2(File.ReadAllBytes("g:\\localhost.pfx"), "password123");
+        private readonly X509Certificate2 myCert;
 
         public NanoHttp(IRequestBroker requestBroker, IConfigurationManager configurationManager, ILogger logger)
         {
@@ -50,6 +51,8 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             if (!int.TryParse(configurationManager.AppSettings["RequestTimeout"], out requestTimeout))
                 requestTimeout = 500;
 
+            if (configurationManager.AppSettings.ContainsKey("CertificateLocation"))
+                myCert = new X509Certificate2(File.ReadAllBytes(configurationManager.AppSettings["CertificateLocation"]));
         }
 
         public void Start()
@@ -82,12 +85,12 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             {
                 while (true)
                 {
-                    while (!listener.Pending() && !tlsListener.Pending())
+                    while (!listener.Pending() || (tlsListener != null && !tlsListener.Pending()))
                     {
                         ((CancellationToken)cancellationToken).ThrowIfCancellationRequested();
                         Thread.Sleep(1);
                     }
-                    Socket s = listener.Pending() ? listener.AcceptSocketAsync().Result : tlsListener.AcceptSocketAsync().Result;
+                    Socket s = listener.Pending() ? listener.AcceptSocketAsync().Result : tlsListener?.AcceptSocketAsync().Result;
                     logger.Trace($"{nameof(NanoHttp)}.{nameof(AllocationMain)}", new LogItem("Event", "Accepted socket"),
                         new LogItem("Client", s.RemoteEndPoint.ToString));
                     processorFactory.StartNew(() => Processor(s), allocationCancellationToken);
@@ -170,11 +173,10 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                     contentOffset += bytesReceived;
                     if (contentOffset >= content.Length - 1)
                     {
-                        request.FinaliseLoad(requiresAuthorisation);
                         // Completed loading body, which could have urlencoded content :(
-                        request.FinaliseLoad(requiresAuthorisation);
+                        TokenState tokenState = request.FinaliseLoad(requiresAuthorisation);
 
-                        if (requiresAuthorisation && request.SecurityToken == null)
+                        if (tokenState == TokenState.Invalid)
                         {
                             logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
                                 new LogItem("Reason", "Authorisation required, but no token provided"));
@@ -187,8 +189,19 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                         request.Body = content;
                         logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest started"));
                         Stopwatch responseTimer = Stopwatch.StartNew();
-                        HttpResponse response = requestBroker.HandleRequest(request);
-                        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest completed"), new LogItem("DurationMilliseconds", responseTimer.Elapsed.TotalMilliseconds));
+                        IHttpResponse response;
+                        if (tokenState == TokenState.Expired || tokenState == TokenState.NotYetValid)
+                        {
+                            response = Container.GetNewInstance<IHttpResponse>();
+                            response.HttpStatusCode = HttpStatusCode.Unauthorized;
+                        }
+                        else
+                        {
+                            response = requestBroker.HandleRequest(request);
+                            logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}",
+                                new LogItem("Event", "HandleRequest completed"),
+                                new LogItem("DurationMilliseconds", responseTimer.Elapsed.TotalMilliseconds));
+                        }
 
                         response.Headers.Add("Access-Control-Allow-Origin", "*");
                         response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS");
@@ -196,7 +209,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
                         byte[] outBuffer = response.ToByteArray();
                         dataStream.Write(outBuffer, 0, outBuffer.Length);
-                        dataStream.Flush();                        
+                        dataStream.Flush();
                         s.Shutdown(SocketShutdown.Both);
                         s.Dispose();
                         dataStream.Dispose();
@@ -234,7 +247,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             else
                 content = new byte[0];
 
-            
+
             received = new byte[0];
             bytesReceived = 0;
             return request;

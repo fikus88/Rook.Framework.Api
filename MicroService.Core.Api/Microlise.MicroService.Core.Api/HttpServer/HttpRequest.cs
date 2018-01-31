@@ -127,7 +127,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             Uri = new Uri("http://" + RequestHeader["Host"] + Path);
         }
 
-        public void FinaliseLoad(bool authorisationRequired)
+        public TokenState FinaliseLoad(bool authorisationRequired)
         {
             if (RequestHeader["Content-Type"] == "application/x-www-form-urlencoded")
             {
@@ -142,12 +142,32 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                 {
                     string payload = RequestHeader["Authorization"].Substring(7);
 
-                    securityTokenHandler.ValidateToken(payload, TokenValidationParameters,
-                        out SecurityToken token);
-
-                    SecurityToken = (JwtSecurityToken)token;
+                    try
+                    {
+                        securityTokenHandler.ValidateToken(payload, TokenValidationParameters,
+                            out SecurityToken token);
+                        SecurityToken = (JwtSecurityToken) token;
+                        return TokenState.Ok;
+                    }
+                    catch (SecurityTokenExpiredException)
+                    {
+                        return TokenState.Expired;
+                    }
+                    catch (SecurityTokenNotYetValidException)
+                    {
+                        return TokenState.NotYetValid;
+                    }
+                    catch (SecurityTokenValidationException)
+                    {
+                        return TokenState.Invalid;
+                    }
+                    catch (SecurityTokenException)
+                    {
+                        return TokenState.Invalid;
+                    }
                 }
             }
+            return TokenState.NotRequired;
         }
 
         private static IEnumerable<SecurityKey> GetSigningKeys()
@@ -181,5 +201,14 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                 return keyset.GetSigningKeys();
             }
         }
+    }
+
+    public enum TokenState
+    {
+        NotRequired,
+        Ok,
+        Expired,
+        NotYetValid,
+        Invalid
     }
 }
