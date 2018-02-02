@@ -99,7 +99,7 @@ namespace Microlise.MicroService.Core.Api
             if (string.IsNullOrWhiteSpace(busResponse.Solution) && string.IsNullOrWhiteSpace(busResponse.Errors))
             {
                 response.SetStringContent("Failed to get a response from the bus");
-                logger.Trace(
+                logger.Debug(
                     $"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
                 response.HttpStatusCode = HttpStatusCode.RequestTimeout;
                 return;
@@ -109,7 +109,7 @@ namespace Microlise.MicroService.Core.Api
             if (!string.IsNullOrWhiteSpace(busResponse.Errors))
                 errors = JsonConvert.DeserializeObject<List<ResponseError>>(busResponse.Errors);
 
-            logger.Trace(
+            logger.Debug(
                 $"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
 
             if (errors != null && errors.Any())
@@ -132,7 +132,7 @@ namespace Microlise.MicroService.Core.Api
 
         public void Start()
         {
-            logger.Trace($"{nameof(RequestStore)}.{nameof(Start)}");
+            logger.Debug($"{nameof(RequestStore)}.{nameof(Start)}");
             pollTimer = new Timer(PollForResponses, null, TimeSpan.FromMilliseconds(50), TimeSpan.FromMinutes(1));
         }
 

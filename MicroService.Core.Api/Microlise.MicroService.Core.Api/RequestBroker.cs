@@ -64,7 +64,14 @@ namespace Microlise.MicroService.Core.Api
             IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> handlers =
                 (activityHandlers ?? (activityHandlers = Container.FindAttributedTypes<ActivityHandlerAttribute>())).ToArray();
 
+            logger.Debug(nameof(RequestBroker) + "." + nameof(GetRequestHandler),
+                new LogItem("Event", "Got handlers"),
+                new LogItem("Handlers", string.Join(",", handlers.Select(kvp => kvp.Key.Name))));
+
             KeyValuePair<Type, ActivityHandlerAttribute[]> handlerInfo = handlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
+
+            logger.Debug(nameof(RequestBroker) + "." + nameof(GetRequestHandler),
+                new LogItem("HandlerInfo", handlerInfo.Key?.Name));
 
             if (handlerInfo.Key == null) return null;
 

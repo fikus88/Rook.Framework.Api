@@ -10,11 +10,6 @@ namespace Microlise.Example.ExampleAPI
     {
 	    private static void Main()
 		{
-#if NETCOREAPP2_0
-            Container.Scan(Assembly.GetEntryAssembly(), typeof(IApiService).Assembly, typeof(IService).Assembly);
-#else
-			Container.Scan(Assembly.GetEntryAssembly(), typeof(IApiService).GetTypeInfo().Assembly, typeof(IService).GetTypeInfo().Assembly);
-#endif            
             IApiService apiService = Container.GetInstance<IApiService>();
 			apiService.Start();
 
