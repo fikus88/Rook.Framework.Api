@@ -127,7 +127,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             Uri = new Uri("http://" + RequestHeader["Host"] + Path);
         }
 
-        public TokenState FinaliseLoad(bool authorisationRequired)
+        public TokenState FinaliseLoad(bool validJwtRequired)
         {
             if (RequestHeader["Content-Type"] == "application/x-www-form-urlencoded")
             {
@@ -136,7 +136,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             }
 
             // decode JWT
-            if (authorisationRequired)
+            if (validJwtRequired)
             {
                 if (RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
                 {
