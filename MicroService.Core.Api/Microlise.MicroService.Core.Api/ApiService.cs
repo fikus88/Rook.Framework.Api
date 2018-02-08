@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Api.HttpServer;
 using Microlise.MicroService.Core.Api.MessageHandlers;
 using Microlise.MicroService.Core.Common;

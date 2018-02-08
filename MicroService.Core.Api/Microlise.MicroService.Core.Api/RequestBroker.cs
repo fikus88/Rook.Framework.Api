@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
+using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Api.BuiltInActivityHandlers;
 using Microlise.MicroService.Core.Api.MessageHandlers;
 using Microlise.MicroService.Core.Common;

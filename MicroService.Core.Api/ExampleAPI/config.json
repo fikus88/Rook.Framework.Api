@@ -4,6 +4,7 @@
   "MongoDatabaseName": "exampleapi",
   "LogLevel": "Trace",
   "RequiresAuthorisation": "false",
+  "RequiresTokenValidation": "false",
   "Port": 81,
   "Backlog": 32,
   "IdentityServerAddress": "192.168.120.138",
