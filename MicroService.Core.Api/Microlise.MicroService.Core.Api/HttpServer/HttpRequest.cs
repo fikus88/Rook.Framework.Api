@@ -136,38 +136,35 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             }
 
             // decode JWT
-            if (authorisationRequired)
-            {
-                if (RequestHeader.ContainsKey("Authorization") && RequestHeader["Authorization"].StartsWith("Bearer "))
-                {
-                    string payload = RequestHeader["Authorization"].Substring(7);
+            if (!authorisationRequired) return TokenState.NotRequired;
 
-                    try
-                    {
-                        securityTokenHandler.ValidateToken(payload, TokenValidationParameters,
-                            out SecurityToken token);
-                        SecurityToken = (JwtSecurityToken) token;
-                        return TokenState.Ok;
-                    }
-                    catch (SecurityTokenExpiredException)
-                    {
-                        return TokenState.Expired;
-                    }
-                    catch (SecurityTokenNotYetValidException)
-                    {
-                        return TokenState.NotYetValid;
-                    }
-                    catch (SecurityTokenValidationException)
-                    {
-                        return TokenState.Invalid;
-                    }
-                    catch (SecurityTokenException)
-                    {
-                        return TokenState.Invalid;
-                    }
-                }
+            if (!RequestHeader.ContainsKey("Authorization") || !RequestHeader["Authorization"].StartsWith("Bearer "))
+                return TokenState.Invalid;
+
+            string payload = RequestHeader["Authorization"].Substring(7);
+
+            try
+            {
+                securityTokenHandler.ValidateToken(payload, TokenValidationParameters, out SecurityToken token);
+                SecurityToken = (JwtSecurityToken) token;
+                return TokenState.Ok;
             }
-            return TokenState.NotRequired;
+            catch (SecurityTokenExpiredException)
+            {
+                return TokenState.Expired;
+            }
+            catch (SecurityTokenNotYetValidException)
+            {
+                return TokenState.NotYetValid;
+            }
+            catch (SecurityTokenException) // The order of these is important: SecurityTokenException is a base class of SecurityTokenExpiredException and SecurityTokenNotYetValidException as well as others.
+            {
+                return TokenState.Invalid;
+            }
+            catch (ArgumentException) // Base class of ArgumentNullException
+            {
+                return TokenState.Invalid;
+            }
         }
 
         private static IEnumerable<SecurityKey> GetSigningKeys()
