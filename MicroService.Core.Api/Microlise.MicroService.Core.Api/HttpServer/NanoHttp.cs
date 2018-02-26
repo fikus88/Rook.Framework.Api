@@ -179,7 +179,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                     if (tokenState == TokenState.Invalid)
                     {
                         logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
-                            new LogItem("Reason", "Authorisation required, but no token provided"));
+                            new LogItem("Reason", "Valid token required, but invalid token provided (or missing)"));
                         s.Shutdown(SocketShutdown.Both);
                         s.Dispose();
                         dataStream.Dispose();
