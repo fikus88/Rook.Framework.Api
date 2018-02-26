@@ -49,7 +49,7 @@ namespace Microlise.MicroService.Core.Api
         public Func<Guid> CreateUniqueId { get; set; } = Guid.NewGuid;
         public static List<string> Methods = new List<string>();
 
-        public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null)
+        public BusResponse PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null)
         {
             Guid requestId = CreateUniqueId.Invoke();
             if (message.Uuid == Guid.Empty)
@@ -63,7 +63,9 @@ namespace Microlise.MicroService.Core.Api
 
             logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Preparing to publish message\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
 
-            using (DataWaitHandle dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset,solutionMatchFunction))
+            BusResponse response = new BusResponse();
+
+            using (DataWaitHandle dataWaitHandle = new DataWaitHandle(false, EventResetMode.AutoReset, solutionMatchFunction))
             {
                 requestMatcher.RegisterWaitHandle(message.Uuid, dataWaitHandle, responseStyle);
 
@@ -78,25 +80,51 @@ namespace Microlise.MicroService.Core.Api
                     logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
 
                     if (errors != null && errors.Any())
-                    {
-                        response.SetStringContent(dataWaitHandle.Errors);
+                        response.Errors = dataWaitHandle.Errors;
 
-                        if (errors.Any(e => e.Type == ResponseError.ErrorType.Server))
-                            response.HttpStatusCode = HttpStatusCode.InternalServerError;
-                        else
-                            response.HttpStatusCode = HttpStatusCode.BadRequest;
-                        return;
-                    }
-
-                    response.SetStringContent(dataWaitHandle.Solution);
-                    response.HttpStatusCode = successResponseCode;
-                    return;
+                    response.Solution = dataWaitHandle.Solution;
                 }
 
-                response.SetStringContent("Failed to get a response from the bus");
-                logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
-                response.HttpStatusCode = HttpStatusCode.RequestTimeout;
+                if (string.IsNullOrEmpty(response.Errors) && string.IsNullOrEmpty(response.Solution))
+                    logger.Trace($"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
+
+                return response;
             }
+        }
+
+        public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null)
+        {
+            BusResponse busResponse = PublishAndWaitForResponse(message, responseStyle, solutionMatchFunction);
+
+            if (string.IsNullOrWhiteSpace(busResponse.Solution) && string.IsNullOrWhiteSpace(busResponse.Errors))
+            {
+                response.SetStringContent("Failed to get a response from the bus");
+                logger.Debug(
+                    $"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received no response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\" Message=\"{message}\"");
+                response.HttpStatusCode = HttpStatusCode.RequestTimeout;
+                return;
+            }
+
+            List<ResponseError> errors = null;
+            if (!string.IsNullOrWhiteSpace(busResponse.Errors))
+                errors = JsonConvert.DeserializeObject<List<ResponseError>>(busResponse.Errors);
+
+            logger.Debug(
+                $"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
+
+            if (errors != null && errors.Any())
+            {
+                response.SetStringContent(busResponse.Errors);
+
+                if (errors.Any(e => e.Type == ResponseError.ErrorType.Server))
+                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
+                else
+                    response.HttpStatusCode = HttpStatusCode.BadRequest;
+                return;
+            }
+
+            response.SetStringContent(busResponse.Solution);
+            response.HttpStatusCode = successResponseCode;
         }
 
         private Timer pollTimer;
@@ -104,7 +132,7 @@ namespace Microlise.MicroService.Core.Api
 
         public void Start()
         {
-            logger.Trace($"{nameof(RequestStore)}.{nameof(Start)}");
+            logger.Debug($"{nameof(RequestStore)}.{nameof(Start)}");
             pollTimer = new Timer(PollForResponses, null, TimeSpan.FromMilliseconds(50), TimeSpan.FromMinutes(1));
         }
 
@@ -129,5 +157,10 @@ namespace Microlise.MicroService.Core.Api
                 pollTimer.Change(TimeSpan.FromMilliseconds(10), TimeSpan.FromMinutes(1));
             }
         }
+    }
+    public class BusResponse
+    {
+        public string Errors { get; set; }
+        public string Solution { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace Microlise.MicroService.Core.Api
         public VerbHandlerAttribute(string activityName, HttpVerb verb, string path, string description = null, params string[] expectedParameters) : base(activityName, verb, path, description, expectedParameters) { }
     }
 
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ActivityHandlerAttribute : Attribute
     {
         /// <summary>

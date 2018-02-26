@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.IoC;
 
-namespace Microlise.MicroService.Core.Api.BuiltInVerbHandlers
+namespace Microlise.MicroService.Core.Api.BuiltInActivityHandlers
 {
     [ActivityHandler("GetApiDescription", HttpVerb.Get, "description", "Describes the API based on descriptions provided in the ActivityHandlerAttribute constructor for each VerbHandler class", SkipAuthorisation = true)]
     internal class GetDescription : IActivityHandler

@@ -23,7 +23,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         private readonly TaskFactory processorFactory = new TaskFactory();
         private readonly IRequestBroker requestBroker;
         private readonly ILogger logger;
-        private readonly bool requiresAuthorisation;
+        private readonly bool validJwtRequired;
         private readonly int port;
         private readonly int backlog;
         private readonly int requestTimeout;
@@ -37,7 +37,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             this.requestBroker = requestBroker;
             this.logger = logger;
 
-            requiresAuthorisation = string.Equals(configurationManager.AppSettings["RequiresAuthorisation"], "true", StringComparison.OrdinalIgnoreCase);
+            validJwtRequired = string.Equals(configurationManager.AppSettings["RequiresJwtValidation"], "true", StringComparison.OrdinalIgnoreCase);
 
             if (!int.TryParse(configurationManager.AppSettings["Port"], out port))
                 port = 80;
@@ -174,7 +174,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                     if (contentOffset < content.Length - 1) continue;
 
                     // Completed loading body, which could have urlencoded content :(
-                    TokenState tokenState = request.FinaliseLoad(requiresAuthorisation);
+                    TokenState tokenState = request.FinaliseLoad(validJwtRequired);
 
                     if (tokenState == TokenState.Invalid)
                     {
