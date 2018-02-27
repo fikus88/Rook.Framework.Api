@@ -147,10 +147,10 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
                     if (request == null)
                     {
-                        int i;
+                        int i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10);
 
                         // If we have a double CRLF then we have a complete header, otherwise keep looping
-                        if ((i = received.FindPattern((byte)13, (byte)10, (byte)13, (byte)10)) == -1) continue;
+                        if (i == -1) continue;
 
                         request = ParseHeader(i, ref received, ref content, ref contentOffset, ref bytesReceived);
 
@@ -171,51 +171,50 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
                     Array.Copy(received, 0, content, contentOffset, bytesReceived);
                     contentOffset += bytesReceived;
-                    if (contentOffset >= content.Length - 1)
+                    if (contentOffset < content.Length - 1) continue;
+
+                    // Completed loading body, which could have urlencoded content :(
+                    TokenState tokenState = request.FinaliseLoad(validJwtRequired);
+
+                    if (tokenState == TokenState.Invalid)
                     {
-                        // Completed loading body, which could have urlencoded content :(
-                        TokenState tokenState = request.FinaliseLoad(validJwtRequired);
-
-                        if (tokenState == TokenState.Invalid)
-                        {
-                            logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
-                                new LogItem("Reason", "Authorisation required, but no token provided"));
-                            s.Shutdown(SocketShutdown.Both);
-                            s.Dispose();
-                            dataStream.Dispose();
-                            return;
-                        }
-
-                        request.Body = content;
-                        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest started"));
-                        Stopwatch responseTimer = Stopwatch.StartNew();
-                        IHttpResponse response;
-                        if (tokenState == TokenState.Expired || tokenState == TokenState.NotYetValid)
-                        {
-                            response = Container.GetNewInstance<IHttpResponse>();
-                            response.HttpStatusCode = HttpStatusCode.Unauthorized;
-                        }
-                        else
-                        {
-                            response = requestBroker.HandleRequest(request);
-                            logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}",
-                                new LogItem("Event", "HandleRequest completed"),
-                                new LogItem("DurationMilliseconds", responseTimer.Elapsed.TotalMilliseconds));
-                        }
-
-                        response.Headers.Add("Access-Control-Allow-Origin", "*");
-                        response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS");
-                        response.Headers.Add("Access-Control-Allow-Headers", "authorization");
-
-                        byte[] outBuffer = response.ToByteArray();
-                        dataStream.Write(outBuffer, 0, outBuffer.Length);
-                        dataStream.Flush();
+                        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"),
+                            new LogItem("Reason", "Valid token required, but invalid token provided (or missing)"));
                         s.Shutdown(SocketShutdown.Both);
                         s.Dispose();
                         dataStream.Dispose();
-                        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", "Response complete"));
                         return;
                     }
+
+                    request.Body = content;
+                    logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "HandleRequest started"));
+                    Stopwatch responseTimer = Stopwatch.StartNew();
+                    IHttpResponse response;
+                    if (tokenState == TokenState.Expired || tokenState == TokenState.NotYetValid)
+                    {
+                        response = Container.GetNewInstance<IHttpResponse>();
+                        response.HttpStatusCode = HttpStatusCode.Unauthorized;
+                    }
+                    else
+                    {
+                        response = requestBroker.HandleRequest(request);
+                        logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}",
+                            new LogItem("Event", "HandleRequest completed"),
+                            new LogItem("DurationMilliseconds", responseTimer.Elapsed.TotalMilliseconds));
+                    }
+
+                    response.Headers.Add("Access-Control-Allow-Origin", "*");
+                    response.Headers.Add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS");
+                    response.Headers.Add("Access-Control-Allow-Headers", "authorization");
+
+                    byte[] outBuffer = response.ToByteArray();
+                    dataStream.Write(outBuffer, 0, outBuffer.Length);
+                    dataStream.Flush();
+                    s.Shutdown(SocketShutdown.Both);
+                    s.Dispose();
+                    dataStream.Dispose();
+                    logger.Trace($"{nameof(NanoHttp)}.{nameof(Processor)}", new LogItem("Event", "Closed socket"), new LogItem("Reason", "Response complete"));
+                    return;
                 }
             }
         }
