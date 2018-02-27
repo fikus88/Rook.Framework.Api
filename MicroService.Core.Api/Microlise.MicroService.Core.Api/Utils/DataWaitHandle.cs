@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using MongoDB.Bson;
 
 namespace Microlise.MicroService.Core.Api.Utils
 {
