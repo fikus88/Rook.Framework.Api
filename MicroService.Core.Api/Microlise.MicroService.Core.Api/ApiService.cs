@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Api.HttpServer;
-using Microlise.MicroService.Core.Api.MessageHandlers;
 using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Services;
@@ -13,15 +12,13 @@ namespace Microlise.MicroService.Core.Api {
 		{
 			IService instance = Container.GetInstance<IService>();
 			INanoHttp httpServer = Container.GetInstance<INanoHttp>();
-			IRequestStore requestStore = Container.GetInstance<IRequestStore>();
-		    ActivityAuthorisationManager aam = Container.GetInstance<ActivityAuthorisationManager>();
+			ActivityAuthorisationManager aam = Container.GetInstance<ActivityAuthorisationManager>();
 
 			Thread.CurrentThread.Name = $"{ServiceInfo.Name} Main Thread";
 
 			instance.Start();
 			httpServer.Start();
-			requestStore.Start();
-            aam.Initialise();
+			aam.Initialise();
 		}
 	}
 }

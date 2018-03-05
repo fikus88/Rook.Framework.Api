@@ -60,10 +60,5 @@ namespace Microlise.MicroService.Core.Api
             response.SetStringContent(busResponse.Solution);
             response.HttpStatusCode = successResponseCode;
         }
-
-        public void Start()
-        {
-            coreRequestStore.Start();
-        }
     }
 }

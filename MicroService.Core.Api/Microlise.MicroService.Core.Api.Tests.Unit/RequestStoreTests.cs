@@ -34,7 +34,7 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
             mongo.DropCollection<MessageWrapper>();
             crs = new Core.RequestStore(dtp.Object, qw.Object, log.Object, mongo, Container.GetInstance<IRequestMatcher>(), cm);
             rs = new RequestStore(log.Object,crs);
-            rs.Start();
+            crs.Start();
         }
 
         [TestMethod]
