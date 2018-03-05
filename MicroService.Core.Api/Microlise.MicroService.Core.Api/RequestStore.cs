@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace Microlise.MicroService.Core.Api
 {
     public sealed class RequestStore : IRequestStore
-    {        
+    {
         private readonly ILogger logger;
         private readonly Core.IRequestStore coreRequestStore;
 
@@ -60,7 +60,7 @@ namespace Microlise.MicroService.Core.Api
             response.SetStringContent(busResponse.Solution);
             response.HttpStatusCode = successResponseCode;
         }
-        
+
         public void Start()
         {
             coreRequestStore.Start();

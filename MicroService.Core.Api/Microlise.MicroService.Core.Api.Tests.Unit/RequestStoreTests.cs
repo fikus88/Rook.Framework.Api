@@ -25,12 +25,15 @@ namespace Microlise.MicroService.Core.Api.Tests.Unit
         private readonly MongoStore mongo = Container.GetInstance<MongoStore>();
         private readonly IConfigurationManager cm = Container.GetInstance<IConfigurationManager>();
         private RequestStore rs;
+        private Core.IRequestStore crs;
 
         [TestInitialize]
         public void Init()
         {
+
             mongo.DropCollection<MessageWrapper>();
-            rs = new RequestStore(dtp.Object, qw.Object, log.Object, mongo,Container.GetInstance<IRequestMatcher>(),cm);
+            crs = new Core.RequestStore(dtp.Object, qw.Object, log.Object, mongo, Container.GetInstance<IRequestMatcher>(), cm);
+            rs = new RequestStore(log.Object,crs);
             rs.Start();
         }
 
