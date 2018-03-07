@@ -21,7 +21,7 @@ namespace Microlise.MicroService.Core.Api.MessageHandlers
 		{
 		    // If Solution == null and there are no errors, we have nothing to store.
 		    if (message.Solution != null || message.Errors.Any())
-		        if (RequestStore.Methods.Contains(message.Method))
+		        if (Core.RequestStore.Methods.Contains(message.Method))
 		        {
 		            MessageWrapper mw = new MessageWrapper {
 		                Uuid = message.Uuid,

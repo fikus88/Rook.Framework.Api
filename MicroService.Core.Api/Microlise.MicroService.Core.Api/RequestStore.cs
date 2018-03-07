@@ -23,9 +23,7 @@ namespace Microlise.MicroService.Core.Api
             this.logger = logger;
             this.coreRequestStore = coreRequestStore;
         }
-
-        public static List<string> Methods = new List<string>();
-
+        
         public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null)
         {
             BusResponse busResponse = coreRequestStore.PublishAndWaitForResponse(message, responseStyle, solutionMatchFunction);
