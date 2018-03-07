@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Api.BuiltInActivityHandlers;
-using Microlise.MicroService.Core.Api.MessageHandlers;
 using Microlise.MicroService.Core.Common;
 
 namespace Microlise.MicroService.Core.Api
