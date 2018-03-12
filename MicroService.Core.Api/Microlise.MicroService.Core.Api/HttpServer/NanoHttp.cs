@@ -20,7 +20,6 @@ namespace Microlise.MicroService.Core.Api.HttpServer
         private TcpListener listener;
         private TcpListener tlsListener;
         private Task allocator;
-        private readonly TaskFactory processorFactory = new TaskFactory();
         private readonly IRequestBroker requestBroker;
         private readonly ILogger logger;
         private readonly bool validJwtRequired;
@@ -91,9 +90,11 @@ namespace Microlise.MicroService.Core.Api.HttpServer
                         Thread.Sleep(1);
                     }
                     Socket s = listener.Pending() ? listener.AcceptSocketAsync().Result : tlsListener?.AcceptSocketAsync().Result;
-                    logger.Trace($"{nameof(NanoHttp)}.{nameof(AllocationMain)}", new LogItem("Event", "Accepted socket"),
+                    logger.Debug($"{nameof(NanoHttp)}.{nameof(AllocationMain)}", new LogItem("Event", "Accepted socket"),
                         new LogItem("Client", s.RemoteEndPoint.ToString));
-                    processorFactory.StartNew(() => Processor(s), allocationCancellationToken);
+                    Task.Run(() => Processor(s), allocationCancellationToken);
+                    logger.Debug($"{nameof(NanoHttp)}.{nameof(AllocationMain)}", new LogItem("Event", "Processor started"),
+                        new LogItem("Client", s.RemoteEndPoint.ToString));
                 }
             }
             catch (OperationCanceledException)
