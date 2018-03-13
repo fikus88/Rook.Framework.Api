@@ -83,7 +83,7 @@ namespace Microlise.MicroService.Core.Api.HttpServer
             foreach (string parameter in parameters)
             {
                 string[] parts = parameter.Split('=');
-                if (parts.Length > 1) Parameters.Add(parts[0], Uri.UnescapeDataString(parts[1]));
+                if (parts.Length == 2) Parameters.Add(parts[0], Uri.UnescapeDataString(parts[1]));                
             }
         }
 

@@ -127,8 +127,13 @@ namespace Microlise.MicroService.Core.Api.HttpServer
 
                 while (true)
                 {
-                    int bytesReceived = dataStream.Read(buffer, 0, buffer.Length);
-                    while (bytesReceived == 0 && connectionTimer.ElapsedMilliseconds < requestTimeout) Thread.Sleep(1);
+                    int bytesReceived;
+                    do
+                    {
+                        bytesReceived = dataStream.Read(buffer, 0, buffer.Length);
+                        if (bytesReceived != 0) break;
+                        Thread.Sleep(1);
+                    } while (connectionTimer.ElapsedMilliseconds < requestTimeout);
 
                     if (bytesReceived == 0)
                     {
