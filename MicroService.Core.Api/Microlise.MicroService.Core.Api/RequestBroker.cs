@@ -54,21 +54,21 @@ namespace Microlise.MicroService.Core.Api
             return response;
         }
 
-        private readonly Dictionary<Type, IActivityHandler> singletonCache = new Dictionary<Type, IActivityHandler>();
-
         private IActivityHandler GetRequestHandler(IHttpRequest request, out ActivityHandlerAttribute activityHandler)
         {
             activityHandler = null;
-            bool Predicate(ActivityHandlerAttribute attr) => RequestMatchesAttribute(request, attr);
+            bool Predicate(ActivityHandlerAttribute attr) => RequestPathMatchesAttributePath(request, attr);
 
             IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> handlers =
-                (activityHandlers ?? (activityHandlers = Container.FindAttributedTypes<ActivityHandlerAttribute>())).ToArray();
+                (activityHandlers ?? (activityHandlers = Container.FindAttributedTypes<ActivityHandlerAttribute>()))
+                .ToArray();
 
             logger.Debug(nameof(RequestBroker) + "." + nameof(GetRequestHandler),
                 new LogItem("Event", "Got handlers"),
                 new LogItem("Handlers", string.Join(",", handlers.Select(kvp => kvp.Key.Name))));
 
-            KeyValuePair<Type, ActivityHandlerAttribute[]> handlerInfo = handlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
+            KeyValuePair<Type, ActivityHandlerAttribute[]> handlerInfo =
+                handlers.FirstOrDefault(kvp => kvp.Value.Any(Predicate));
 
             logger.Debug(nameof(RequestBroker) + "." + nameof(GetRequestHandler),
                 new LogItem("HandlerInfo", handlerInfo.Key?.Name));
@@ -79,24 +79,12 @@ namespace Microlise.MicroService.Core.Api
             activityHandler = attribute;
             request.SetUriPattern(attribute.Path);
 
-            IActivityHandler instance;
-
-            if (attribute.AsSingleton)
-            {
-                if (!singletonCache.ContainsKey(handlerInfo.Key))
-                    singletonCache.Add(handlerInfo.Key, (IActivityHandler)Container.GetInstance(handlerInfo.Key));
-
-                instance = singletonCache[handlerInfo.Key];
-            }
-            else
-            {
-                instance = (IActivityHandler)Container.GetInstance(handlerInfo.Key);
-            }
+            IActivityHandler instance = (IActivityHandler) Container.GetInstance(handlerInfo.Key);
 
             return instance;
         }
 
-        private bool RequestMatchesAttribute(IHttpRequest request, ActivityHandlerAttribute attribute)
+        private static bool RequestPathMatchesAttributePath(IHttpRequest request, ActivityHandlerAttribute attribute)
         {
             if (request.Verb != attribute.Verb) return false;
 
@@ -122,8 +110,11 @@ namespace Microlise.MicroService.Core.Api
              */
 
             for (int i = 0; i < tokens.Length; i++)
-                if (!tokens[i].StartsWith("{") && !tokens[i].EndsWith("}") && tokens[i] != values[i])
+            {
+                bool replacable = tokens[i].StartsWith("{") && tokens[i].EndsWith("}");
+                if (!replacable && tokens[i] != values[i])
                     return false;
+            }
 
             return true;
         }

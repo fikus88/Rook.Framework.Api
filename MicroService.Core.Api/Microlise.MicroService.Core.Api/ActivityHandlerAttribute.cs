@@ -38,6 +38,7 @@ namespace Microlise.MicroService.Core.Api
         /// /fish?<b>parameter1=value&parameter2=invaluable</b>
         /// </summary>
         public string[] ExpectedParameters { get; }
+        [Obsolete("Does not offer any different functionality to the default behaviour")]
         public bool AsSingleton { get; set; }
         public bool SkipAuthorisation { get; set; }
     }
