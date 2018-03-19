@@ -1,10 +1,10 @@
 ﻿using System;
 using Microlise.MicroService.Core.Api;
-using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.HttpServer;
 
 namespace Microlise.Example.ExampleAPI.ActivityHandlers {
     [ActivityHandler("GetWidgetsByOwner", HttpVerb.Get, "/widget/owner/{ownerId}")]
-    internal class GetWidgetsByOwner : IActivityHandler
+    internal class GetWidgetsByOwner : MicroService.Core.HttpServer.IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)
         {

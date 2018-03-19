@@ -1,23 +1,10 @@
-﻿using Microlise.MicroService.Core.Api.HttpServer;
-using System;
+﻿using System;
 
 namespace Microlise.MicroService.Core.Api
 {
-    [Obsolete("Use IActivityHandler", true)]
+    [Obsolete("Use Microlise.MicroService.Core.HttpServer.IActivityHandler", true)]
     public interface IVerbHandler : IActivityHandler { }
 
-    public interface IActivityHandler
-    {
-        void Handle(IHttpRequest request, IHttpResponse response);
-
-        /// <summary>
-        /// Self-documenting property: An example of the document expected to be passed with the request
-        /// </summary>
-        dynamic ExampleRequestDocument { get; }
-        
-        /// <summary>
-        /// Self-documenting property: An example of the document expected to be passed in the response
-        /// </summary>
-        dynamic ExampleResponseDocument { get; }
-    }
+    [Obsolete("IActivityHandler has been moved to Microlise.MicroService.Core.HttpServer.IActivityHandler", true)]
+    public interface IActivityHandler { }
 }

@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.HttpServer;
 using Microlise.MicroService.Core.IoC;
 
 namespace Microlise.MicroService.Core.Api.BuiltInActivityHandlers
 {
     [ActivityHandler("GetApiDescription", HttpVerb.Get, "description", "Describes the API based on descriptions provided in the ActivityHandlerAttribute constructor for each VerbHandler class", SkipAuthorisation = true)]
-    internal class GetDescription : IActivityHandler
+    internal class GetDescription : Core.HttpServer.IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)
         {
@@ -26,8 +26,8 @@ namespace Microlise.MicroService.Core.Api.BuiltInActivityHandlers
                         expectedParameters = attribute.ExpectedParameters,
                         exampleCall =
                         $"{attribute.Path}{(attribute.ExpectedParameters.Any() ? "?" : "")}{string.Join("&", attribute.ExpectedParameters.Select(a => a + "=<value>"))}",
-                        exampleRequestDocument = ((IActivityHandler)Container.GetInstance(keyValuePair.Key)).ExampleRequestDocument,
-                        exampleResponseDocument = ((IActivityHandler)Container.GetInstance(keyValuePair.Key)).ExampleResponseDocument,
+                        exampleRequestDocument = ((Core.HttpServer.IActivityHandler)Container.GetInstance(keyValuePair.Key)).ExampleRequestDocument,
+                        exampleResponseDocument = ((Core.HttpServer.IActivityHandler)Container.GetInstance(keyValuePair.Key)).ExampleResponseDocument,
                     });
                 }
             }

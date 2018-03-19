@@ -1,8 +1,6 @@
-﻿using System.Reflection;
-using System.Threading;
+﻿using System.Threading;
 using Microlise.MicroService.Core.Api;
 using Microlise.MicroService.Core.IoC;
-using Microlise.MicroService.Core.Services;
 
 namespace Microlise.Example.ExampleAPI
 {

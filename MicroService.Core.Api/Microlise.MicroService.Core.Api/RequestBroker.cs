@@ -1,5 +1,4 @@
-﻿using Microlise.MicroService.Core.Api.HttpServer;
-using System;
+﻿using System;
 using Microlise.MicroService.Core.IoC;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +8,7 @@ using System.Net;
 using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Api.BuiltInActivityHandlers;
 using Microlise.MicroService.Core.Common;
+using Microlise.MicroService.Core.HttpServer;
 
 namespace Microlise.MicroService.Core.Api
 {
@@ -17,19 +17,24 @@ namespace Microlise.MicroService.Core.Api
         private IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> activityHandlers;
         private readonly ILogger logger;
         private readonly IActivityAuthorisationManager activityAuthorisationManager;
+        private readonly IApiMetrics apiMetrics;
 
-        public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager)
+        public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager, IApiMetrics apiMetrics)
         {
             this.logger = logger;
             this.activityAuthorisationManager = activityAuthorisationManager;
+            this.apiMetrics = apiMetrics;
         }
 
         public IHttpResponse HandleRequest(IHttpRequest request)
         {
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
             Stopwatch timer = Stopwatch.StartNew();
-            IActivityHandler handler = GetRequestHandler(request, out ActivityHandlerAttribute attribute);
-            logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds), new LogItem("FoundHandler", handler != null ? handler.GetType().Name : "null"));
+            Core.HttpServer.IActivityHandler handler = GetRequestHandler(request, out ActivityHandlerAttribute attribute);
+
+            var handlerName = handler != null ? handler.GetType().Name : "null";
+
+            logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds), new LogItem("FoundHandler", handlerName));
 
             if (handler == null)
                 if (request.Verb == HttpVerb.Options)
@@ -50,11 +55,15 @@ namespace Microlise.MicroService.Core.Api
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle called"));
             timer.Restart();
             handler.Handle(request, response);
-            logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds));
+            
+            var elapsedMilliseconds = timer.Elapsed.TotalMilliseconds;
+            logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle completed"), new LogItem("DurationMilliseconds", elapsedMilliseconds));
+            apiMetrics.RecordHandlerDuration(elapsedMilliseconds, handlerName, response.HttpStatusCode);
+            
             return response;
         }
 
-        private IActivityHandler GetRequestHandler(IHttpRequest request, out ActivityHandlerAttribute activityHandler)
+        private Core.HttpServer.IActivityHandler GetRequestHandler(IHttpRequest request, out ActivityHandlerAttribute activityHandler)
         {
             activityHandler = null;
             bool Predicate(ActivityHandlerAttribute attr) => RequestPathMatchesAttributePath(request, attr);
@@ -79,7 +88,7 @@ namespace Microlise.MicroService.Core.Api
             activityHandler = attribute;
             request.SetUriPattern(attribute.Path);
 
-            IActivityHandler instance = (IActivityHandler) Container.GetInstance(handlerInfo.Key);
+            Core.HttpServer.IActivityHandler instance = (Core.HttpServer.IActivityHandler) Container.GetInstance(handlerInfo.Key);
 
             return instance;
         }

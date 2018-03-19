@@ -5,8 +5,8 @@ using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.ResponseHandlers;
 using System.Net;
-using Microlise.MicroService.Core.Api.HttpServer;
 using Newtonsoft.Json;
+using Microlise.MicroService.Core.HttpServer;
 
 namespace Microlise.MicroService.Core.Api
 {

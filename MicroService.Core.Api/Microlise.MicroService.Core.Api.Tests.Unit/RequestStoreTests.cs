@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microlise.MicroService.Core.Api.HttpServer;
 using Microlise.MicroService.Core.Application.Bus;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Common;
@@ -13,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Microlise.MicroService.Core.TestUtils;
+using Microlise.MicroService.Core.HttpServer;
 
 namespace Microlise.MicroService.Core.Api.Tests.Unit
 {

@@ -2,7 +2,7 @@
 using System.Net;
 using Microlise.MicroService.Core;
 using Microlise.MicroService.Core.Api;
-using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.HttpServer;
 using IRequestStore = Microlise.MicroService.Core.Api.IRequestStore;
 
 namespace Microlise.Example.ExampleAPI.ActivityHandlers

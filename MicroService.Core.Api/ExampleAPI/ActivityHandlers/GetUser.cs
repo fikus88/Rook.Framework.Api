@@ -1,11 +1,11 @@
 ﻿using System;
 using Microlise.MicroService.Core.Api;
-using Microlise.MicroService.Core.Api.HttpServer;
+using Microlise.MicroService.Core.HttpServer;
 
 namespace Microlise.Example.ExampleAPI.ActivityHandlers
 {
     [ActivityHandler("GetUser", HttpVerb.Get, "/user/{userId}")]
-    internal class GetUser : IActivityHandler
+    internal class GetUser : MicroService.Core.HttpServer.IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)
         {
