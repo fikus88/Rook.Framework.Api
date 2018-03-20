@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microlise.MicroService.Core" Version="2018.3.20.1" />
+    <PackageReference Include="Microlise.MicroService.Core" Version="2018.3.20.2" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="prometheus-net" Version="2.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
