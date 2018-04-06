@@ -1,13 +1,13 @@
 {
-  "QueueUri": "amqp://guest:guest@localhost:5672",
+  "QueueUri": "amqp://guest:guest@queue:5672",
   "MongoDatabaseUri": "mongodb://localhost:27017",
   "MongoDatabaseName": "exampleapi",
   "LogLevel": "Debug",
   "RequiresAuthorisation": "false",
-  "RequiresTokenValidation": "false",
+  "RequiresJwtValidation": "false",
   "Port": 81,
   "Backlog": 32,
   "IdentityServerAddress": "192.168.120.138",
-  "IdentityServerPath ": "/identity/identity",
+  "IdentityServerPath ": "/IdentityServer/identity",
   "IdentityServerPort": 80
 }
