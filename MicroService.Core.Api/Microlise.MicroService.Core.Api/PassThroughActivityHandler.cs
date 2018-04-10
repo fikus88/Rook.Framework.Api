@@ -36,7 +36,7 @@ namespace Microlise.MicroService.Core.Api
 				Need = need ?? new { }
 			};
 
-			requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, response, ResponseStyle,s=>s.Length>0);
+			requestStore.PublishAndWaitForResponse(message, SuccessStatusCode, response, ResponseStyle,s=>true);
 		}
 
 	    public abstract dynamic ExampleRequestDocument { get; }
