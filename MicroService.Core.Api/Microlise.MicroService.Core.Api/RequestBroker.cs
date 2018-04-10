@@ -38,7 +38,11 @@ namespace Microlise.MicroService.Core.Api
 
             if (handler == null)
                 if (request.Verb == HttpVerb.Options)
+                {
                     handler = Container.GetInstance<OptionsActivityHandler>();
+                    attribute = new ActivityHandlerAttribute("",HttpVerb.Options,"") { SkipAuthorisation = true };
+
+                }
                 else
                     return HttpResponse.MethodNotFound;
 
