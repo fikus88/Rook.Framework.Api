@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.HttpServer;
@@ -13,6 +14,9 @@ namespace Microlise.MicroService.Core.Api
 		{
             // Override the Core.HttpServer.RequestBroker to give full API functionality            
             Container.Map<IRequestBroker, RequestBroker>();
+
+		    var logger = Container.GetInstance<ILogger>();
+		    AppDomain.CurrentDomain.UnhandledException += (s, e) => logger.Error("Unhandled", new LogItem("Exception", e.ExceptionObject.ToString));
 
             IService instance = Container.GetInstance<IService>();
 			ActivityAuthorisationManager aam = Container.GetInstance<ActivityAuthorisationManager>();
