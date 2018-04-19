@@ -7,7 +7,7 @@ namespace Microlise.MicroService.Core.Api.BuiltInActivityHandlers
     {
         public void Handle(IHttpRequest request, IHttpResponse response)
         {
-            response.Content = null;
+            response.HttpContent = new EmptyHttpContent();
             response.HttpStatusCode = HttpStatusCode.OK;
         }
 
