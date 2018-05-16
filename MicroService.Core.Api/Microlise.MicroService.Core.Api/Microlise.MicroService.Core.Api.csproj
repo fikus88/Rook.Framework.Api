@@ -16,6 +16,10 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="BuiltInActivityHandlers\GetApiHealth.cs" />
+    <Compile Remove="BuiltInActivityHandlers\GetApiMetrics.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microlise.MicroService.Core" Version="*" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="prometheus-net" Version="2.0.0" />

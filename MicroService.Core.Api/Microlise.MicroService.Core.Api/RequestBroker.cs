@@ -37,14 +37,15 @@ namespace Microlise.MicroService.Core.Api
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler completed"), new LogItem("DurationMilliseconds", timer.Elapsed.TotalMilliseconds), new LogItem("FoundHandler", handlerName));
 
             if (handler == null)
-                if (request.Verb == HttpVerb.Options)
+                switch (request.Verb)
                 {
-                    handler = Container.GetInstance<OptionsActivityHandler>();
-                    attribute = new ActivityHandlerAttribute("",HttpVerb.Options,"") { SkipAuthorisation = true };
-
+                    case HttpVerb.Options:
+                        handler = Container.GetInstance<OptionsActivityHandler>();
+                        attribute = new ActivityHandlerAttribute("", request.Verb, "") { SkipAuthorisation = true };
+                        break;
+                    default:
+                        return HttpResponse.MethodNotFound;
                 }
-                else
-                    return HttpResponse.MethodNotFound;
 
             JwtSecurityToken token = request.SecurityToken;
             if (!activityAuthorisationManager.CheckAuthorisation(token, attribute))
