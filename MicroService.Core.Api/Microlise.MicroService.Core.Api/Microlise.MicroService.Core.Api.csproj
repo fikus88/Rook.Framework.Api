@@ -7,9 +7,9 @@
     <Company>Microlise</Company>
     <Product>Microlise.MicroService.Core.Api</Product>
     <Description>.Net Standard Core Code for a MUP API</Description>
-    <Version>2017.11.31.2</Version>
-    <AssemblyVersion>2017.11.31.1</AssemblyVersion>
-    <FileVersion>2017.11.31.1</FileVersion>
+    <Version>2018.5.22.1</Version>
+    <AssemblyVersion>2018.5.22.1</AssemblyVersion>
+    <FileVersion>2018.5.22.1</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>
@@ -20,7 +20,7 @@
     <Compile Remove="BuiltInActivityHandlers\GetApiMetrics.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microlise.MicroService.Core" Version="*" />
+    <PackageReference Include="Microlise.MicroService.Core" Version="$([System.DateTime]::Now.ToString(yyyy)).*" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="prometheus-net" Version="2.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.2.1" />
