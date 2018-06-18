@@ -26,7 +26,7 @@ namespace Microlise.MicroService.Core.Api
         
         public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null)
         {
-            BusResponse busResponse = coreRequestStore.PublishAndWaitForResponse(message, responseStyle, solutionMatchFunction);
+            var busResponse = coreRequestStore.PublishAndWaitForResponse(message, responseStyle, solutionMatchFunction);
 
             if (string.IsNullOrWhiteSpace(busResponse.Solution) && string.IsNullOrWhiteSpace(busResponse.Errors))
             {
