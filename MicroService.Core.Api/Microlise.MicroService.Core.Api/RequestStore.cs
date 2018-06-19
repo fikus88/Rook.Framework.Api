@@ -27,7 +27,6 @@ namespace Microlise.MicroService.Core.Api
         public void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null)
         {
             var busResponse = coreRequestStore.PublishAndWaitForResponse(message, responseStyle, solutionMatchFunction);
-
             if (string.IsNullOrWhiteSpace(busResponse.Solution) && string.IsNullOrWhiteSpace(busResponse.Errors))
             {
                 response.SetStringContent("Failed to get a response from the bus");
@@ -37,25 +36,31 @@ namespace Microlise.MicroService.Core.Api
                 return;
             }
 
+            logger.Debug(
+                $"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
+
             List<ResponseError> errors = null;
             if (!string.IsNullOrWhiteSpace(busResponse.Errors))
                 errors = JsonConvert.DeserializeObject<List<ResponseError>>(busResponse.Errors);
 
-            logger.Debug(
-                $"Operation=\"{nameof(RequestStore)}.{nameof(PublishAndWaitForResponse)}\" Event=\"Published message and received response\" MessageId=\"{message.Uuid}\" MessageMethod=\"{message.Method}\"");
+            SetResponse(message, successResponseCode, response, busResponse.Solution, errors);
+        }
 
+        public void SetResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, string solution,
+            List<ResponseError> errors)
+        {
             if (errors != null && errors.Any())
             {
-                response.SetStringContent(busResponse.Errors);
+                response.SetStringContent(JsonConvert.SerializeObject(errors));
 
-                if (errors.Any(e => e.Type == ResponseError.ErrorType.Server))
-                    response.HttpStatusCode = HttpStatusCode.InternalServerError;
-                else
-                    response.HttpStatusCode = HttpStatusCode.BadRequest;
+                response.HttpStatusCode = errors.Any(e => e.Type == ResponseError.ErrorType.Server) 
+                    ? HttpStatusCode.InternalServerError 
+                    : HttpStatusCode.BadRequest;
+
                 return;
             }
 
-            response.SetStringContent(busResponse.Solution);
+            response.SetStringContent(solution);
             response.HttpStatusCode = successResponseCode;
         }
     }
