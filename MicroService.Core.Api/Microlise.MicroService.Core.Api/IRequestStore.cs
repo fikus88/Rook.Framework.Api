@@ -12,7 +12,6 @@ namespace Microlise.MicroService.Core.Api
         void PublishAndWaitForResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response,
             ResponseStyle responseStyle = ResponseStyle.WholeSolution, Func<string, bool> solutionMatchFunction = null);
 
-        void SetResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, string solution,
-            List<ResponseError> errors);
+        void SetResponse(HttpStatusCode successResponseCode, IHttpResponse response, string solution, List<ResponseError> errors);
     }
 }

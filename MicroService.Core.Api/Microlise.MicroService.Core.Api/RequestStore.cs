@@ -43,18 +43,17 @@ namespace Microlise.MicroService.Core.Api
             if (!string.IsNullOrWhiteSpace(busResponse.Errors))
                 errors = JsonConvert.DeserializeObject<List<ResponseError>>(busResponse.Errors);
 
-            SetResponse(message, successResponseCode, response, busResponse.Solution, errors);
+            SetResponse(successResponseCode, response, busResponse.Solution, errors);
         }
 
-        public void SetResponse<TNeed, TSolution>(Message<TNeed, TSolution> message, HttpStatusCode successResponseCode, IHttpResponse response, string solution,
-            List<ResponseError> errors)
+        public void SetResponse(HttpStatusCode successResponseCode, IHttpResponse response, string solution, List<ResponseError> errors)
         {
             if (errors != null && errors.Any())
             {
                 response.SetStringContent(JsonConvert.SerializeObject(errors));
 
-                response.HttpStatusCode = errors.Any(e => e.Type == ResponseError.ErrorType.Server) 
-                    ? HttpStatusCode.InternalServerError 
+                response.HttpStatusCode = errors.Any(e => e.Type == ResponseError.ErrorType.Server)
+                    ? HttpStatusCode.InternalServerError
                     : HttpStatusCode.BadRequest;
 
                 return;
