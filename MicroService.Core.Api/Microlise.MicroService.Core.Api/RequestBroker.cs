@@ -25,11 +25,21 @@ namespace Microlise.MicroService.Core.Api
             this.activityAuthorisationManager = activityAuthorisationManager;
             this.apiMetrics = apiMetrics;
         }
-
-        public IHttpResponse HandleRequest(IHttpRequest request)
+        
+        public IHttpResponse HandleRequest(IHttpRequest request, TokenState tokenState)
         {
+            IHttpResponse response = Container.GetNewInstance<IHttpResponse>();
+
+            if (tokenState == TokenState.Invalid || tokenState == TokenState.Expired || tokenState == TokenState.NotYetValid)
+            {
+                response = Container.GetNewInstance<IHttpResponse>();
+                response.HttpStatusCode = HttpStatusCode.Unauthorized;
+                return response;
+            }
+
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
             Stopwatch timer = Stopwatch.StartNew();
+            
             Core.HttpServer.IActivityHandler handler = GetRequestHandler(request, out ActivityHandlerAttribute attribute);
 
             var handlerName = handler != null ? handler.GetType().Name : "null";
@@ -54,8 +64,6 @@ namespace Microlise.MicroService.Core.Api
                 unauthorisedResponse.HttpStatusCode = HttpStatusCode.Unauthorized;
                 return unauthorisedResponse;
             }
-
-            IHttpResponse response = Container.GetNewInstance<IHttpResponse>();
 
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle called"));
             timer.Restart();
