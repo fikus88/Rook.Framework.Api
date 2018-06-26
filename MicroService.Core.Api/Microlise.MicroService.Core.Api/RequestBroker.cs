@@ -76,6 +76,8 @@ namespace Microlise.MicroService.Core.Api
             return response;
         }
 
+        public int Precedence { get; } = 1;
+
         private Core.HttpServer.IActivityHandler GetRequestHandler(IHttpRequest request, out ActivityHandlerAttribute activityHandler)
         {
             activityHandler = null;
