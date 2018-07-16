@@ -2,7 +2,6 @@
 using System.Threading;
 using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Common;
-using Microlise.MicroService.Core.HttpServer;
 using Microlise.MicroService.Core.IoC;
 using Microlise.MicroService.Core.Services;
 
@@ -12,9 +11,6 @@ namespace Microlise.MicroService.Core.Api
 	{
 		public void Start()
 		{
-            // Override the Core.HttpServer.RequestBroker to give full API functionality            
-            Container.Map<IRequestBroker, RequestBroker>();
-
 		    var logger = Container.GetInstance<ILogger>();
 		    AppDomain.CurrentDomain.UnhandledException += (s, e) => logger.Error("Unhandled", new LogItem("Exception", e.ExceptionObject.ToString));
 
