@@ -67,8 +67,19 @@ namespace Microlise.MicroService.Core.Api
 
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle called"));
             timer.Restart();
-            handler.Handle(request, response);
-            
+
+            try
+            {
+                handler.Handle(request, response);
+            }
+            catch(Exception exception)
+            {
+                logger.Exception($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", "Exception caught handling request", exception);
+
+                response.SetStringContent(string.Empty);
+                response.HttpStatusCode = HttpStatusCode.InternalServerError;
+            }
+
             var elapsedMilliseconds = timer.Elapsed.TotalMilliseconds;
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle completed"), new LogItem("DurationMilliseconds", elapsedMilliseconds));
             apiMetrics.RecordHandlerDuration(elapsedMilliseconds, handlerName, response.HttpStatusCode);
