@@ -1,5 +1,4 @@
 ﻿using System;
-using Microlise.MicroService.Core.IoC;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
@@ -9,32 +8,44 @@ using Microlise.MicroService.Core.Api.ActivityAuthorisation;
 using Microlise.MicroService.Core.Api.BuiltInActivityHandlers;
 using Microlise.MicroService.Core.Common;
 using Microlise.MicroService.Core.HttpServer;
+using Microlise.MicroService.Core.StructureMap;
 
 namespace Microlise.MicroService.Core.Api
 {
     internal class RequestBroker : IRequestBroker
     {
-        private IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> activityHandlers;
+        private IDictionary<Type, ActivityHandlerAttribute[]> activityHandlers;
         private readonly ILogger logger;
         private readonly IActivityAuthorisationManager activityAuthorisationManager;
         private readonly IApiMetrics apiMetrics;
+        private readonly IContainerFacade _container;
 
-        public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager, IApiMetrics apiMetrics)
+        private IHttpResponse NotFoundResponse
+        {
+            get
+            {
+                var notFound = _container.GetInstance<IHttpResponse>(true);
+                notFound.HttpStatusCode = HttpStatusCode.NotFound;
+                notFound.HttpContent = new EmptyHttpContent();
+                return notFound;
+            }
+        }
+
+        public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager, IApiMetrics apiMetrics, IContainerFacade container)
         {
             this.logger = logger;
             this.activityAuthorisationManager = activityAuthorisationManager;
             this.apiMetrics = apiMetrics;
+            _container = container;
         }
         
         public IHttpResponse HandleRequest(IHttpRequest request, TokenState tokenState)
         {
-            IHttpResponse response = Container.GetNewInstance<IHttpResponse>();
-
+            IHttpResponse response = _container.GetInstance<IHttpResponse>(true);
+            
             if (tokenState == TokenState.Invalid || tokenState == TokenState.Expired || tokenState == TokenState.NotYetValid)
             {
-                response = Container.GetNewInstance<IHttpResponse>();
-                response.HttpStatusCode = HttpStatusCode.Unauthorized;
-                return response;
+                return NotFoundResponse;
             }
 
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
@@ -50,19 +61,19 @@ namespace Microlise.MicroService.Core.Api
                 switch (request.Verb)
                 {
                     case HttpVerb.Options:
-                        handler = Container.GetInstance<OptionsActivityHandler>();
+                        handler = _container.GetInstance<OptionsActivityHandler>();
                         attribute = new ActivityHandlerAttribute("", request.Verb, "") { SkipAuthorisation = true };
                         break;
                     default:
-                        return HttpResponse.MethodNotFound;
+                        return NotFoundResponse;
                 }
 
             JwtSecurityToken token = request.SecurityToken;
             if (!activityAuthorisationManager.CheckAuthorisation(token, attribute))
             {
-                IHttpResponse unauthorisedResponse = Container.GetNewInstance<IHttpResponse>();
-                unauthorisedResponse.HttpStatusCode = HttpStatusCode.Unauthorized;
-                return unauthorisedResponse;
+                var unauthorised = _container.GetInstance<IHttpResponse>(true);
+                unauthorised.HttpStatusCode = HttpStatusCode.Unauthorized;
+                return unauthorised;
             }
 
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "Handler Handle called"));
@@ -94,9 +105,10 @@ namespace Microlise.MicroService.Core.Api
             activityHandler = null;
             bool Predicate(ActivityHandlerAttribute attr) => RequestPathMatchesAttributePath(request, attr);
 
-            IEnumerable<KeyValuePair<Type, ActivityHandlerAttribute[]>> handlers =
-                (activityHandlers ?? (activityHandlers = Container.FindAttributedTypes<ActivityHandlerAttribute>()))
-                .ToArray();
+            IDictionary<Type, ActivityHandlerAttribute[]> handlers = activityHandlers ??
+                                                                     (activityHandlers =
+                                                                         _container.GetAttributedTypes<ActivityHandlerAttribute>(
+                                                                             typeof(Core.HttpServer.IActivityHandler)));
 
             logger.Debug(nameof(RequestBroker) + "." + nameof(GetRequestHandler),
                 new LogItem("Event", "Got handlers"),
@@ -114,7 +126,7 @@ namespace Microlise.MicroService.Core.Api
             activityHandler = attribute;
             request.SetUriPattern(attribute.Path);
 
-            Core.HttpServer.IActivityHandler instance = (Core.HttpServer.IActivityHandler) Container.GetInstance(handlerInfo.Key);
+            Core.HttpServer.IActivityHandler instance = (Core.HttpServer.IActivityHandler) _container.GetInstance(handlerInfo.Key);
 
             return instance;
         }

@@ -11,7 +11,7 @@ namespace Microlise.Example.ExampleAPI.ActivityHandlers
     /// load the file bytes into memory
     /// </summary>
     [ActivityHandler("GetFile", HttpVerb.Get, "/file/{fileId}")]
-    internal class GetFile : MicroService.Core.HttpServer.IActivityHandler
+    public class GetFile : MicroService.Core.HttpServer.IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)
         {

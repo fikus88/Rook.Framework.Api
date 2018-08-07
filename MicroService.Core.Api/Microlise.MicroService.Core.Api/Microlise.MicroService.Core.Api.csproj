@@ -10,6 +10,7 @@
     <Version>2018.5.22.1</Version>
     <AssemblyVersion>2018.5.22.1</AssemblyVersion>
     <FileVersion>2018.5.22.1</FileVersion>
+    <ProjectGuid>CFC5BCBD-B29F-499B-B003-E38B92EE4411</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>

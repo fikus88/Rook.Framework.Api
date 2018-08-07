@@ -8,7 +8,7 @@ using IRequestStore = Microlise.MicroService.Core.Api.IRequestStore;
 namespace Microlise.Example.ExampleAPI.ActivityHandlers
 {
     [ActivityHandler("StoreWidget", HttpVerb.Post, "/widget/{widgetId}", "Puts a Widget in the Widget Store", "name", "weight")]
-    internal class PutWidget : PassThroughActivityHandler
+    public class PutWidget : PassThroughActivityHandler
     {
         public PutWidget(IRequestStore requestStore) : base(requestStore) { }
         protected override string Method => "StoreWidget";

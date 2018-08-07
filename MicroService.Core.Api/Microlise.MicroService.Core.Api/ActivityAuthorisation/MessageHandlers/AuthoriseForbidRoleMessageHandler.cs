@@ -2,7 +2,8 @@ using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.MessageHandlers;
 using Microlise.MicroService.Core.Attributes;
 
-namespace Microlise.MicroService.Core.Api.ActivityAuthorisation.MessageHandlers {
+namespace Microlise.MicroService.Core.Api.ActivityAuthorisation.MessageHandlers
+{
     [Handler("ForbidRoleToPerformActivity", AcceptanceBehaviour = AcceptanceBehaviour.OnlyWithSolution)]
     [Handler("AuthoriseRoleToPerformActivity", AcceptanceBehaviour = AcceptanceBehaviour.OnlyWithSolution)]
     internal class AuthoriseForbidRoleMessageHandler : IMessageHandler2<ActivityRoleNeed, string>

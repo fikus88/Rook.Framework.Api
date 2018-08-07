@@ -2,22 +2,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microlise.MicroService.Core.HttpServer;
-using Microlise.MicroService.Core.IoC;
+using Microlise.MicroService.Core.StructureMap;
 
 namespace Microlise.MicroService.Core.Api.BuiltInActivityHandlers
 {
     [ActivityHandler("GetApiDescription", HttpVerb.Get, "description", "Describes the API based on descriptions provided in the ActivityHandlerAttribute constructor for each VerbHandler class", SkipAuthorisation = true)]
     internal class GetDescription : Core.HttpServer.IActivityHandler
     {
+        private readonly IContainerFacade _container;
+
+        public GetDescription(IContainerFacade container)
+        {
+            _container = container;
+        }
+
         public void Handle(IHttpRequest request, IHttpResponse response)
         {
-            Dictionary<Type, ActivityHandlerAttribute[]> handlers = Container.FindAttributedTypes<ActivityHandlerAttribute>();
+            Dictionary<Type, ActivityHandlerAttribute[]> handlers = _container.GetAttributedTypes<ActivityHandlerAttribute>(typeof(Core.HttpServer.IActivityHandler));
             List<object> handlerInfoList = new List<object>();
 
             foreach (KeyValuePair<Type, ActivityHandlerAttribute[]> keyValuePair in handlers)
             {
                 foreach (ActivityHandlerAttribute attribute in keyValuePair.Value)
                 {
+                    var instance = (Core.HttpServer.IActivityHandler)_container.GetInstance(keyValuePair.Key);
                     handlerInfoList.Add(new
                     {
                         path = attribute.Path,
@@ -26,8 +34,8 @@ namespace Microlise.MicroService.Core.Api.BuiltInActivityHandlers
                         expectedParameters = attribute.ExpectedParameters,
                         exampleCall =
                         $"{attribute.Path}{(attribute.ExpectedParameters.Any() ? "?" : "")}{string.Join("&", attribute.ExpectedParameters.Select(a => a + "=<value>"))}",
-                        exampleRequestDocument = ((Core.HttpServer.IActivityHandler)Container.GetInstance(keyValuePair.Key)).ExampleRequestDocument,
-                        exampleResponseDocument = ((Core.HttpServer.IActivityHandler)Container.GetInstance(keyValuePair.Key)).ExampleResponseDocument,
+                        exampleRequestDocument = instance.ExampleRequestDocument,
+                        exampleResponseDocument = instance.ExampleResponseDocument,
                     });
                 }
             }

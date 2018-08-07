@@ -5,7 +5,7 @@ using Microlise.MicroService.Core.HttpServer;
 namespace Microlise.Example.ExampleAPI.ActivityHandlers
 {
     [ActivityHandler("GetUser", HttpVerb.Get, "/user/{userId}")]
-    internal class GetUser : MicroService.Core.HttpServer.IActivityHandler
+    public class GetUser : MicroService.Core.HttpServer.IActivityHandler
     {
         public void Handle(IHttpRequest request, IHttpResponse response)
         {

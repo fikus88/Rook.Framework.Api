@@ -5,31 +5,32 @@ using System.Linq;
 using Microlise.MicroService.Core.Application.Bus;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Common;
-using Microlise.MicroService.Core.IoC;
+using Microlise.MicroService.Core.StructureMap;
 
 namespace Microlise.MicroService.Core.Api.ActivityAuthorisation
 {
     internal class ActivityAuthorisationManager : IActivityAuthorisationManager
     {
         private readonly IQueueWrapper queue;
+        private readonly IContainerFacade _container;
         public AutoDictionary<string, IEnumerable<string>> ActivityRoles { get; } = new AutoDictionary<string, IEnumerable<string>>();
 
         private readonly bool requiresAuthorisation;
 
-        public ActivityAuthorisationManager(IQueueWrapper queueWrapper, IConfigurationManager config)
+        public ActivityAuthorisationManager(IQueueWrapper queueWrapper, IConfigurationManager config, IContainerFacade container)
         {
             queue = queueWrapper;
+            _container = container;
             requiresAuthorisation = string.Equals(config.AppSettings["RequiresAuthorisation"], "true", StringComparison.OrdinalIgnoreCase);
         }
 
         public void Initialise()
         {
-            // Get all the Activities
-            Dictionary<Type, ActivityHandlerAttribute[]> attributes = Container.FindAttributedTypes<ActivityHandlerAttribute>();
+            Dictionary<Type, ActivityHandlerAttribute[]> attributes = _container.GetAttributedTypes<ActivityHandlerAttribute>(typeof(Core.HttpServer.IActivityHandler));
 
             // Send a "Register" message on the bus for each activity
             foreach (KeyValuePair<Type, ActivityHandlerAttribute[]> keyValuePair in attributes)
-                foreach (ActivityHandlerAttribute attribute in keyValuePair.Value.Where(a => a.ActivityName != null && a.SkipAuthorisation == false))
+                foreach (ActivityHandlerAttribute attribute in keyValuePair.Value.Where(a => a.ActivityName != null && !a.SkipAuthorisation))
                     queue.PublishMessage(new Message<string, string>
                     {
                         Method = "RegisterActivityForAuthorisation",
