@@ -13,14 +13,14 @@
     <ProjectGuid>CFC5BCBD-B29F-499B-B003-E38B92EE4411</ProjectGuid>
     <Configurations>Debug;Release;Experimental</Configurations>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Experimental|AnyCPU'">
+  <ItemGroup Condition="'$(Configuration)'=='Experimental'">
     <PackageReference Include="Microlise.MicroService.Core" Version="2018.8.28.3-experimental" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)|$(Platform)'!='Experimental|AnyCPU'">
+  <ItemGroup Condition="'$(Configuration)'!='Experimental'">
     <PackageReference Include="Microlise.MicroService.Core" Version="$([System.DateTime]::Now.ToString(yyyy)).*" />
   </ItemGroup>
   <ItemGroup>
