@@ -11,13 +11,19 @@
     <AssemblyVersion>2018.5.22.1</AssemblyVersion>
     <FileVersion>2018.5.22.1</FileVersion>
     <ProjectGuid>CFC5BCBD-B29F-499B-B003-E38B92EE4411</ProjectGuid>
+    <Configurations>Debug;Release;Experimental</Configurations>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Experimental|AnyCPU'">
+    <PackageReference Include="Microlise.MicroService.Core" Version="2018.8.28.1-experimental" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)|$(Platform)'!='Experimental|AnyCPU'">
     <PackageReference Include="Microlise.MicroService.Core" Version="$([System.DateTime]::Now.ToString(yyyy)).*" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="prometheus-net" Version="2.1.0" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
