@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup Condition="'$(Configuration)|$(Platform)'=='Experimental|AnyCPU'">
-    <PackageReference Include="Microlise.MicroService.Core" Version="2018.8.28.1-experimental" />
+    <PackageReference Include="Microlise.MicroService.Core" Version="2018.8.28.3-experimental" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)|$(Platform)'!='Experimental|AnyCPU'">
     <PackageReference Include="Microlise.MicroService.Core" Version="$([System.DateTime]::Now.ToString(yyyy)).*" />
