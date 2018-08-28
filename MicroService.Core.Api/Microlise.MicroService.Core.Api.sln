@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microlise.MicroService.Core.Api", "Microlise.MicroService.Core.Api\Microlise.MicroService.Core.Api.csproj", "{D4879980-32FE-402E-AA73-F7CEB60B9F0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microlise.MicroService.Core.Api", "Microlise.MicroService.Core.Api\Microlise.MicroService.Core.Api.csproj", "{CFC5BCBD-B29F-499B-B003-E38B92EE4411}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microlise.Example.ExampleAPI", "ExampleAPI\Microlise.Example.ExampleAPI.csproj", "{028B0D06-BE6C-491B-AF94-6BA0895C5B25}"
 EndProject
@@ -12,19 +12,26 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Experimental|Any CPU = Experimental|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D4879980-32FE-402E-AA73-F7CEB60B9F0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D4879980-32FE-402E-AA73-F7CEB60B9F0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D4879980-32FE-402E-AA73-F7CEB60B9F0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D4879980-32FE-402E-AA73-F7CEB60B9F0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFC5BCBD-B29F-499B-B003-E38B92EE4411}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFC5BCBD-B29F-499B-B003-E38B92EE4411}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFC5BCBD-B29F-499B-B003-E38B92EE4411}.Experimental|Any CPU.ActiveCfg = Experimental|Any CPU
+		{CFC5BCBD-B29F-499B-B003-E38B92EE4411}.Experimental|Any CPU.Build.0 = Experimental|Any CPU
+		{CFC5BCBD-B29F-499B-B003-E38B92EE4411}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFC5BCBD-B29F-499B-B003-E38B92EE4411}.Release|Any CPU.Build.0 = Release|Any CPU
 		{028B0D06-BE6C-491B-AF94-6BA0895C5B25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{028B0D06-BE6C-491B-AF94-6BA0895C5B25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{028B0D06-BE6C-491B-AF94-6BA0895C5B25}.Experimental|Any CPU.ActiveCfg = Experimental|Any CPU
+		{028B0D06-BE6C-491B-AF94-6BA0895C5B25}.Experimental|Any CPU.Build.0 = Experimental|Any CPU
 		{028B0D06-BE6C-491B-AF94-6BA0895C5B25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{028B0D06-BE6C-491B-AF94-6BA0895C5B25}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9003395-EFD9-46C0-BA12-DFF68E8F28C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9003395-EFD9-46C0-BA12-DFF68E8F28C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9003395-EFD9-46C0-BA12-DFF68E8F28C2}.Experimental|Any CPU.ActiveCfg = Experimental|Any CPU
+		{C9003395-EFD9-46C0-BA12-DFF68E8F28C2}.Experimental|Any CPU.Build.0 = Experimental|Any CPU
 		{C9003395-EFD9-46C0-BA12-DFF68E8F28C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9003395-EFD9-46C0-BA12-DFF68E8F28C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
