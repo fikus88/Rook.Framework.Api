@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup Condition="'$(Configuration)'=='Experimental'">
-    <PackageReference Include="Microlise.MicroService.Core" Version="2018.8.28.4-experimental" />
+    <PackageReference Include="Microlise.MicroService.Core" Version="2018.8.29.1-experimental" />
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)'!='Experimental'">
     <PackageReference Include="Microlise.MicroService.Core" Version="$([System.DateTime]::Now.ToString(yyyy)).*" />
