@@ -28,7 +28,7 @@ namespace Microlise.MicroService.Core.Api.StructureMap
             For<Core.HttpServer.IActivityHandler>().Use<OptionsActivityHandler>();
 
             For<IActivityAuthorisationManager>().Singleton().Use<ActivityAuthorisationManager>();
-            For<IBackplaneConsumer>().Add<RoleMessageHandler>();
+            For<IBackplaneConsumer>().Add<ActivityRoleBackplaneConsumer>();
             For<ActivityRoles>().Use<ActivityRoles>();
         }
     }
