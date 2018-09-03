@@ -1,4 +1,3 @@
-using System;
 using Microlise.MicroService.Core.Application.Message;
 using Microlise.MicroService.Core.Application.MessageHandlers;
 using Microlise.MicroService.Core.Attributes;
@@ -8,7 +7,7 @@ namespace Microlise.MicroService.Core.Api.ActivityAuthorisation.MessageHandlers
 {
     [Handler("RegisterActivityForAuthorisation", AcceptanceBehaviour = AcceptanceBehaviour.OnlyWithSolution)]
     [Handler("GetRolesForActivity", AcceptanceBehaviour = AcceptanceBehaviour.OnlyWithoutSolution)]
-    internal class RoleMessageHandler : IMessageHandler2<string, string>, IBackplaneConsumer
+    internal class RoleMessageHandler : BackplaneConsumer<ActivityRoles>, IMessageHandler2<string, string>
     {
         private readonly IActivityAuthorisationManager activityAuthorisationManager;
         private readonly IBackplane backplane;
@@ -18,13 +17,10 @@ namespace Microlise.MicroService.Core.Api.ActivityAuthorisation.MessageHandlers
             this.activityAuthorisationManager = activityAuthorisationManager;
             this.backplane = backplane;
         }
-
-        public Guid ConsumesType => typeof(ActivityRoles).GUID;
-
-        public void Consume(object v)
+        
+        public override void Consume(ActivityRoles value)
         {
-            ActivityRoles ar = (ActivityRoles)v;
-            activityAuthorisationManager.ActivityRoles[ar.Activity] = ar.Roles;
+            activityAuthorisationManager.ActivityRoles[value.Activity] = value.Roles;
         }
 
         public CompletionAction Handle(Message<string, string> message)
