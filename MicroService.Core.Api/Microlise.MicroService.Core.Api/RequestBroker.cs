@@ -20,14 +20,14 @@ namespace Microlise.MicroService.Core.Api
         private readonly IApiMetrics apiMetrics;
         private readonly IContainerFacade _container;
 
-        private IHttpResponse NotFoundResponse
+        private IHttpResponse UnauthorisedResponse
         {
             get
             {
-                var notFound = _container.GetInstance<IHttpResponse>(true);
-                notFound.HttpStatusCode = HttpStatusCode.NotFound;
-                notFound.HttpContent = new EmptyHttpContent();
-                return notFound;
+                var unauthorisedResponse = _container.GetInstance<IHttpResponse>(true);
+                unauthorisedResponse.HttpStatusCode = HttpStatusCode.Unauthorized;
+                unauthorisedResponse.HttpContent = new EmptyHttpContent();
+                return unauthorisedResponse;
             }
         }
 
@@ -45,7 +45,7 @@ namespace Microlise.MicroService.Core.Api
             
             if (tokenState == TokenState.Invalid || tokenState == TokenState.Expired || tokenState == TokenState.NotYetValid)
             {
-                return NotFoundResponse;
+                return UnauthorisedResponse;
             }
 
             logger.Trace($"{nameof(RequestBroker)}.{nameof(HandleRequest)}", new LogItem("Event", "GetRequestHandler started"));
@@ -65,7 +65,7 @@ namespace Microlise.MicroService.Core.Api
                         attribute = new ActivityHandlerAttribute("", request.Verb, "") { SkipAuthorisation = true };
                         break;
                     default:
-                        return NotFoundResponse;
+                        return null;
                 }
 
             JwtSecurityToken token = request.SecurityToken;
@@ -158,8 +158,8 @@ namespace Microlise.MicroService.Core.Api
 
             for (int i = 0; i < tokens.Length; i++)
             {
-                bool replacable = tokens[i].StartsWith("{") && tokens[i].EndsWith("}");
-                if (!replacable && tokens[i] != values[i])
+                bool replaceable = tokens[i].StartsWith("{") && tokens[i].EndsWith("}");
+                if (!replaceable && tokens[i] != values[i])
                     return false;
             }
 
