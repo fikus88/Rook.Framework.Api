@@ -19,6 +19,7 @@ namespace Microlise.MicroService.Core.Api
         private readonly IActivityAuthorisationManager activityAuthorisationManager;
         private readonly IApiMetrics apiMetrics;
         private readonly IContainerFacade _container;
+        private readonly IConfigurationManager _configurationManager;
 
         private IHttpResponse UnauthorisedResponse
         {
@@ -31,12 +32,14 @@ namespace Microlise.MicroService.Core.Api
             }
         }
 
-        public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager, IApiMetrics apiMetrics, IContainerFacade container)
+        public RequestBroker(ILogger logger, IActivityAuthorisationManager activityAuthorisationManager, 
+            IApiMetrics apiMetrics, IContainerFacade container, IConfigurationManager configurationManager)
         {
             this.logger = logger;
             this.activityAuthorisationManager = activityAuthorisationManager;
             this.apiMetrics = apiMetrics;
             _container = container;
+            _configurationManager = configurationManager;
         }
         
         public IHttpResponse HandleRequest(IHttpRequest request, TokenState tokenState)
@@ -102,8 +105,10 @@ namespace Microlise.MicroService.Core.Api
 
         private Core.HttpServer.IActivityHandler GetRequestHandler(IHttpRequest request, out ActivityHandlerAttribute activityHandler)
         {
+            var baseUrlParts = _configurationManager.Get("BaseUrl", "/").ToLowerInvariant().Split('/').Where(x => x != string.Empty).ToArray();
+
             activityHandler = null;
-            bool Predicate(ActivityHandlerAttribute attr) => RequestPathMatchesAttributePath(request, attr);
+            bool Predicate(ActivityHandlerAttribute attr) => RequestPathMatchesAttributePath(request, attr, baseUrlParts);
 
             IDictionary<Type, ActivityHandlerAttribute[]> handlers = activityHandlers ??
                                                                      (activityHandlers =
@@ -124,19 +129,27 @@ namespace Microlise.MicroService.Core.Api
 
             ActivityHandlerAttribute attribute = handlerInfo.Value.First(Predicate);
             activityHandler = attribute;
-            request.SetUriPattern(attribute.Path);
+
+            var path = attribute.Path;
+            if (baseUrlParts.Length > 0)
+                path = $"/{string.Join("/",baseUrlParts)}{path}";
+
+            request.SetUriPattern(path);
 
             Core.HttpServer.IActivityHandler instance = (Core.HttpServer.IActivityHandler) _container.GetInstance(handlerInfo.Key);
 
             return instance;
         }
 
-        private static bool RequestPathMatchesAttributePath(IHttpRequest request, ActivityHandlerAttribute attribute)
+        private bool RequestPathMatchesAttributePath(IHttpRequest request, ActivityHandlerAttribute attribute, string[] baseUrlParts)
         {
             if (request.Verb != attribute.Verb) return false;
 
             string pattern = attribute.Path;
             string path = request.Path;
+
+            if (baseUrlParts.Length > 0)
+                pattern = $"/{string.Join("/", baseUrlParts)}{pattern}";
 
             string[] pathParts = path.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries);
 
