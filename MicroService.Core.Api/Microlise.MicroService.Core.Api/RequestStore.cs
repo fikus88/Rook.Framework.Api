@@ -59,6 +59,11 @@ namespace Microlise.MicroService.Core.Api
                 return;
             }
 
+            if (successResponseCode == HttpStatusCode.NoContent) //the request has been successfully processed and the response is intentionally blank.
+            {
+                solution = string.Empty;
+            }
+
             response.SetStringContent(solution);
             response.HttpStatusCode = successResponseCode;
         }
