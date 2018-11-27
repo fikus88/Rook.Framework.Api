@@ -22,10 +22,10 @@ namespace Microlise.MicroService.Core.Api.StructureMap
 
             For<IMessageHandler2<ActivityRoleNeed, string>>().Use<AuthoriseForbidRoleMessageHandler>();
             For<IMessageHandler2<string, string>>().Use<RoleMessageHandler>();
-            For<Core.HttpServer.IActivityHandler>().Use<GetDescription>();
-            For<Core.HttpServer.IActivityHandler>().Use<GetFavIcon>();
-            For<Core.HttpServer.IActivityHandler>().Use<GetVersion>();
-            For<Core.HttpServer.IActivityHandler>().Use<OptionsActivityHandler>();
+            For<IActivityHandler>().Use<GetDescription>();
+            For<IActivityHandler>().Use<GetFavIcon>();
+            For<IActivityHandler>().Use<GetVersion>();
+            For<IActivityHandler>().Use<OptionsActivityHandler>();
 
             For<IActivityAuthorisationManager>().Singleton().Use<ActivityAuthorisationManager>();
             For<IBackplaneConsumer>().Add<ActivityRoleBackplaneConsumer>();
