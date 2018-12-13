@@ -15,13 +15,13 @@ namespace Microlise.MicroService.Core.Api.ActivityAuthorisation
         private readonly IContainerFacade _container;
         public AutoDictionary<string, IEnumerable<string>> ActivityRoles { get; } = new AutoDictionary<string, IEnumerable<string>>();
 
-        private readonly bool requiresAuthorisation;
+        private readonly bool _requiresAuthorisation;
 
         public ActivityAuthorisationManager(IQueueWrapper queueWrapper, IConfigurationManager config, IContainerFacade container)
         {
             queue = queueWrapper;
             _container = container;
-            requiresAuthorisation = string.Equals(config.AppSettings["RequiresAuthorisation"], "true", StringComparison.OrdinalIgnoreCase);
+            _requiresAuthorisation = config.Get("RequiresAuthorisation", true);
         }
 
         public void Initialise()
@@ -40,7 +40,7 @@ namespace Microlise.MicroService.Core.Api.ActivityAuthorisation
 
         public bool CheckAuthorisation(JwtSecurityToken token, ActivityHandlerAttribute attribute)
         {
-            if (!requiresAuthorisation || attribute.SkipAuthorisation) return true;
+            if (!_requiresAuthorisation || attribute.SkipAuthorisation) return true;
             if (token == null) return false;
             string[] usersRoles = token.Claims.Where(c => c.Type == "role").Select(c => c.Value).ToArray();
             return ActivityRoles.ContainsKey(attribute.ActivityName) &&
