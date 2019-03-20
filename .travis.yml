@@ -10,7 +10,7 @@ script:
   - dotnet build -c Release /p:Version="${YEAR}"."${MONTH}"."${DAY}"."${TRAVIS_BUILD_NUMBER}"
   - dotnet pack Rook.Framework.Api/Rook.Framework.Api.csproj -c Release /p:Version="${YEAR}"."${MONTH}"."${DAY}"."${TRAVIS_BUILD_NUMBER}"
   - dotnet test Rook.Framework.Api.Tests.Unit/Rook.Framework.Api.Tests.Unit.csproj
-  - export NUGET_FILE=$(ls Rook.MicroService.Core.Api/bin/Release/*.nupkg)
+  - export NUGET_FILE=$(ls Rook.Framework.Api/bin/Release/*.nupkg)
   - dotnet nuget push "${NUGET_FILE}" -k "${NUGET_KEY}" -s https://www.nuget.org/
 global:
   - DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
