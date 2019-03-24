@@ -5,12 +5,19 @@
     <Authors>Rook contributors</Authors>
     <Company>Rook Framework</Company>
     <Product>Rook.MicroService.Core.Api</Product>
-    <Description>.Net Standard Core Code for a Rook API</Description>
+    <Description>API microservice functionality for rook services</Description>
     <AssemblyVersion>2018.5.22.1</AssemblyVersion>
     <FileVersion>2018.5.22.1</FileVersion>
     <ProjectGuid>CFC5BCBD-B29F-499B-B003-E38B92EE4411</ProjectGuid>
     <Configurations>Debug;Release;Experimental</Configurations>
     <PackageVersion />
+    <Title>Rook.Framework.Api</Title>
+    <PackageProjectUrl>https://github.com/rookframework/Rook.Documentation</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/rookframework/Rook.Framework.Api/blob/master/LICENSE     </PackageLicenseUrl>
+    <PackageIconUrl>https://github.com/rookframework/Rook.Documentation/blob/master/rook.png?raw=true</PackageIconUrl>
+    <RepositoryUrl>https://github.com/rookframework/Rook.Framework.Api</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
@@ -18,7 +25,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Rook.Framework.Core" Version="2019.3.20.2" />
+    <PackageReference Include="Rook.Framework.Core" Version="2019.3.24.11" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
   </ItemGroup>
 </Project>
