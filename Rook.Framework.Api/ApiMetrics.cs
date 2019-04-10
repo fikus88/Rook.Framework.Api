@@ -5,7 +5,7 @@ namespace Rook.Framework.Api
 {
     public class ApiMetrics : IApiMetrics
     {
-        private const string MetricsPrefix = "microlise_api";
+        private const string MetricsPrefix = "rook_api";
 
         // Prometheus standard unit of time is seconds: https://prometheus.io/docs/practices/naming/#base-units
         private readonly Histogram _handlerDurationHistogram = Metrics.CreateHistogram(
