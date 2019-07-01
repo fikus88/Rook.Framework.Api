@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 using Rook.Framework.Core.Common;
 using Rook.Framework.Core.Services;
 using Rook.Framework.Api.ActivityAuthorisation;
+using Rook.Framework.Core.HttpServerAspNet;
 
 namespace Rook.Framework.Api
 {
@@ -24,6 +26,7 @@ namespace Rook.Framework.Api
 		    AppDomain.CurrentDomain.UnhandledException += (s, e) => _logger.Error("Unhandled", new LogItem("Exception", e.ExceptionObject.ToString));
 			Thread.CurrentThread.Name = $"{ServiceInfo.Name} Main Thread";
 
+			Startup.MvcAssembliesToRegister.Add(Assembly.GetExecutingAssembly());
 			_service.Start();
 			_activityAuthorisationManager.Initialise();
         }

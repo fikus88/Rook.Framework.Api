@@ -1,0 +1,9 @@
+{
+	"QueueUri": "amqp://guest:guest@queue:5672",
+	"LogLevel": "Info",
+	"RequiresAuthorisation": "false",
+	"RequiresJwtValidation": "false",
+	"Port": 80,
+	"UseStructureMap": true,
+	"HttpServerType": "AspNetHttp"
+}
