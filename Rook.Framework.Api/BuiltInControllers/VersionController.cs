@@ -8,9 +8,9 @@ namespace Rook.Framework.Api.BuiltInControllers
 	public class VersionController : ControllerBase
 	{
 		[HttpGet]
-		public JsonResult Get()
+		public ActionResult<string> Get()
 		{
-			return new JsonResult(new { version = ServiceInfo.Version });
+			return Ok(new { version = ServiceInfo.Version });
 		}
 	}
 }
