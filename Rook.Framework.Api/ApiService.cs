@@ -27,6 +27,7 @@ namespace Rook.Framework.Api
 			Thread.CurrentThread.Name = $"{ServiceInfo.Name} Main Thread";
 
 			Startup.MvcAssembliesToRegister.Add(Assembly.GetExecutingAssembly());
+
 			_service.Start();
 			_activityAuthorisationManager.Initialise();
         }

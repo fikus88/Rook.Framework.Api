@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Rook.Framework.Core.Application.MessageHandlers;
 using Rook.Framework.Core.Backplane;
 using Rook.Framework.Core.HttpServer;
 using Rook.Framework.Api.ActivityAuthorisation;
 using Rook.Framework.Api.ActivityAuthorisation.MessageHandlers;
 using Rook.Framework.Api.BuiltInActivityHandlers;
+using Rook.Framework.Core.HttpServerAspNet;
 using StructureMap;
 
 namespace Rook.Framework.Api.StructureMap
@@ -21,6 +23,8 @@ namespace Rook.Framework.Api.StructureMap
 
             For<IRequestBroker>().Singleton().Add<RequestBroker>();
 
+            For<IAspNetStartupConfiguration>().Use<ApiStartupConfiguration>();
+            //For<IActionFilter>().Use<ActionDurationActionFilter>();
             For<IMessageHandler2<ActivityRoleNeed, string>>().Use<AuthoriseForbidRoleMessageHandler>();
             For<IMessageHandler2<string, string>>().Use<RoleMessageHandler>();
             For<IActivityHandler>().Use<GetDescription>();

@@ -1,6 +1,6 @@
 {
 	"QueueUri": "amqp://guest:guest@queue:5672",
-	"LogLevel": "Info",
+	"LogLevel": "Trace",
 	"RequiresAuthorisation": "false",
 	"RequiresJwtValidation": "false",
 	"Port": 8500,
