@@ -6,8 +6,7 @@
     <Company>Rook Framework</Company>
     <Product>Rook.MicroService.Core.Api</Product>
     <Description>API microservice functionality for rook services</Description>
-    <AssemblyVersion>2018.5.22.1</AssemblyVersion>
-    <FileVersion>2018.5.22.1</FileVersion>
+	  <FileVersion>2019.7.3.2</FileVersion>
     <ProjectGuid>CFC5BCBD-B29F-499B-B003-E38B92EE4411</ProjectGuid>
     <Configurations>Debug;Release;Experimental</Configurations>
     <PackageVersion />
@@ -18,6 +17,9 @@
     <RepositoryUrl>https://github.com/rookframework/Rook.Framework.Api</RepositoryUrl>
     <RepositoryType>Github</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <AssemblyVersion>2019.7.3.2</AssemblyVersion>
+    <Version>2019.7.3.2</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
