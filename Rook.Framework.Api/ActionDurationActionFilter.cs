@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Net;
-using System.Timers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Rook.Framework.Core.Common;
 
@@ -20,7 +19,7 @@ namespace Rook.Framework.Api
 
 		public void OnActionExecuting(ActionExecutingContext context)
 		{
-            _logger.Trace($"{nameof(RequestBroker)}.{nameof(context.ActionDescriptor.DisplayName)}", new LogItem("Event", "Handler Handle called"));
+            _logger.Trace($"{nameof(ActionDurationActionFilter)}.{nameof(context.ActionDescriptor.DisplayName)}", new LogItem("Event", "Controller Action Executing"));
 			_stopwatch = Stopwatch.StartNew();
 		}
 
@@ -30,7 +29,7 @@ namespace Rook.Framework.Api
 
 			double elapsedMilliseconds = _stopwatch.Elapsed.TotalMilliseconds;
 
-			_logger.Trace($"{nameof(RequestBroker)}.{nameof(context.ActionDescriptor.DisplayName)}", new LogItem("Event", "Handler Handle completed"), new LogItem("DurationMilliseconds", elapsedMilliseconds));
+			_logger.Trace($"{nameof(ActionDurationActionFilter)}.{nameof(context.ActionDescriptor.DisplayName)}", new LogItem("Event", "Controller Action Finished Executing"), new LogItem("DurationMilliseconds", elapsedMilliseconds));
 			_apiMetrics.RecordHandlerDuration(elapsedMilliseconds, context.ActionDescriptor.DisplayName, (HttpStatusCode)context.HttpContext.Response.StatusCode);
 		}
 	}
