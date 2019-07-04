@@ -11,9 +11,9 @@ namespace testapi
 		/// </summary>
 		/// <returns>String of Testing 12345</returns>
 		[HttpGet]
-		public ActionResult<string> Get()
+		public ActionResult<string> Get([FromQuery]TestModel model)
 		{
-			return Ok("Testing 12345");
+			return Ok($"Testing {model.Name}");
 		}
 	}
 }
