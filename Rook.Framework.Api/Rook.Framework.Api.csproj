@@ -11,6 +11,7 @@
     <Configurations>Debug;Release;Experimental</Configurations>
     <PackageVersion />
     <Title>Rook.Framework.Api</Title>
+		<PackageId>MAB.Rook.Framework.Api</PackageId>
     <PackageProjectUrl>https://github.com/rookframework/Rook.Documentation</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/rookframework/Rook.Framework.Api/blob/master/LICENSE     </PackageLicenseUrl>
     <PackageIconUrl>https://github.com/rookframework/Rook.Documentation/blob/master/rook.png?raw=true</PackageIconUrl>
