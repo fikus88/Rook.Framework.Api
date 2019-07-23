@@ -19,8 +19,8 @@
     <RepositoryType>Github</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>2019.7.8.7</AssemblyVersion>
-    <Version>2019.7.8.7</Version>
+    <AssemblyVersion>2019.7.23.12</AssemblyVersion>
+    <Version>2019.7.23.12</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
@@ -29,7 +29,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="MAB.Rook.Framework.Core" Version="2019.7.8.30" />
+    <PackageReference Include="MAB.Rook.Framework.Core" Version="2019.7.23.35" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
   </ItemGroup>
 </Project>
