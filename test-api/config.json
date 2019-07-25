@@ -1,9 +1,11 @@
 {
-	"QueueUri": "amqp://guest:guest@queue:5672",
-	"LogLevel": "Trace",
-	"RequiresAuthorisation": "false",
-	"RequiresJwtValidation": "false",
-	"Port": 8500,
-	"UseStructureMap": true,
-	"HttpServerType": "AspNetHttp"
+  "QueueUri": "amqp://guest:guest@queue:5672",
+  "LogLevel": "Info",
+  "RequiresAuthorisation": "false",
+  "RequiresJwtValidation": "false",
+  "Port": 8600,
+  "UseStructureMap": true,
+  "HttpServerType": "AspNetHttp",
+  "IdentityServerAddress": "http://localhost:5000",
+  "IdentityServerRequireHttps": false 
 }
