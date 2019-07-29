@@ -26,13 +26,13 @@ namespace Rook.Framework.Api.ActivityAuthorisation
         {
             var assemblies = new[] { Assembly.GetExecutingAssembly(), Assembly.GetEntryAssembly() };
 
-			var authorizeActivityAttributes = assemblies
+			var activityAttributes = assemblies
 				.SelectMany(x => x.GetTypes())
 				.SelectMany(x => x.GetMethods())
-				.SelectMany(x => x.GetCustomAttributes<AuthorizeActivityAttribute>(true))
+				.SelectMany(x => x.GetCustomAttributes<ActivityAttribute>(true))
 				.ToArray();
 			
-			foreach (var attribute in authorizeActivityAttributes)
+			foreach (var attribute in activityAttributes)
             {
 	            queue.PublishMessage(new Message<string, string>
 	            {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,10 +20,9 @@ namespace test_api
 			return Ok("Test");
 		}
 
-		[HttpGet]
+		[HttpGet("auth")]
 		[SwaggerTag("Test")]
-		[AuthorizeActivity("TestActivity")]
-		[Route("auth")]
+		[Activity("TestActivity")]
 		public IActionResult TestAuthenticated()
 		{
 			return Ok("Test");

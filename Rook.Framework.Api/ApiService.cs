@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Rook.Framework.Core.Common;
 using Rook.Framework.Core.Services;
 using Rook.Framework.Api.ActivityAuthorisation;
@@ -30,12 +32,11 @@ namespace Rook.Framework.Api
 			Thread.CurrentThread.Name = $"{ServiceInfo.Name} Main Thread";
 			Core.HttpServerAspNet.AspNetHttp.Configure(options =>
 			{
+				options.Filters.Add(new AuthorizeFilter(
+					new AuthorizationPolicyBuilder().AddRequirements(new ActivityAuthorizationRequirement()).Build()));
 				options.Filters.Add(typeof(ActionDurationActionFilter));
-				options.AuthorizationPolicies.Add(AuthorizeActivityAttribute.AuthorizePolicyName, builder =>
-				{
-					builder.Requirements.Add(new ActivityAuthorizationRequirement());
-				});
 				options.AuthorizationHandlers.Add(typeof(ActivityAuthorizationHandler));
+				options.SwaggerOperationFilters.Add(typeof(ActivityAuthorisationOperationFilter));
 				options.MvcApplicationPartAssemblies.Add(Assembly.GetExecutingAssembly());
 				options.IdentityServerOptions.RequireHttps = _configurationManager.Get("IdentityServerRequireHttps", true);
 			});

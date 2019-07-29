@@ -1,15 +1,14 @@
 ﻿using System;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Rook.Framework.Api.AspNetHttp
 {
 	[AttributeUsage(AttributeTargets.Method)]
-	public class AuthorizeActivityAttribute : AuthorizeAttribute
+	public class ActivityAttribute : Attribute
 	{
 		public string ActivityName { get; }
-		public static readonly string AuthorizePolicyName = "Activity";
+		public bool SkipAuthorisation { get; set; }
 
-		public AuthorizeActivityAttribute(string activityName) : base(AuthorizePolicyName)
+		public ActivityAttribute(string activityName)
 		{
 			ActivityName = activityName;
 		}
