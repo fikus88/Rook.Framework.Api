@@ -30,18 +30,25 @@ namespace Rook.Framework.Api.AspNetHttp
 			if (context.Resource is AuthorizationFilterContext mvcContext &&
 			    mvcContext.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
 			{
-				var activityAttribute = controllerActionDescriptor.MethodInfo.GetCustomAttributes<ActivityAttribute>().SingleOrDefault();
-				if (activityAttribute == null)
+				if (controllerActionDescriptor.ControllerTypeInfo.Assembly == Assembly.GetAssembly(typeof(Core.HttpServerAspNet.AspNetHttp)))
 				{
-					throw new InvalidOperationException($"{nameof(ActivityAttribute)} not found.");
+					succeed = true;
 				}
+				else
+				{
+					var activityAttribute = controllerActionDescriptor.MethodInfo.GetCustomAttributes<ActivityAttribute>().SingleOrDefault();
+					if (activityAttribute == null)
+					{
+						throw new InvalidOperationException($"{nameof(ActivityAttribute)} not found.");
+					}
 
-				var activityName = activityAttribute.ActivityName;
-				var activityRoles = _activityAuthorisationManager.ActivityRoles[activityName] ?? Enumerable.Empty<string>();
+					var activityName = activityAttribute.ActivityName;
+					var activityRoles = _activityAuthorisationManager.ActivityRoles[activityName] ?? Enumerable.Empty<string>();
 
-				bool hasRequiredClaim = activityRoles.Any(role => context.User.IsInRole(role));
+					bool hasRequiredClaim = activityRoles.Any(role => context.User.IsInRole(role));
 
-				succeed = !_requiresAuthorisation || activityAttribute.SkipAuthorisation || hasRequiredClaim;
+					succeed = !_requiresAuthorisation || activityAttribute.SkipAuthorisation || hasRequiredClaim;
+				}
 			}
 
 			if (succeed)
