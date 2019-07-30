@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.OpenApi.Models;
 using Rook.Framework.Core.Common;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -17,30 +18,32 @@ namespace Rook.Framework.Api.AspNetHttp
 
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
 		{
-			var operationRequiresAuthorisation = context.MethodInfo
+			var controllerActionDescriptor = context.ApiDescription.ActionDescriptor as ControllerActionDescriptor;
+			var operationIsSkippingAuthorisation = context.MethodInfo
 				.GetCustomAttributes(true)
 				.OfType<ActivityAttribute>()
-				.Any(x => !x.SkipAuthorisation);
+				.Any(x => x.SkipAuthorisation);
 
-
-			if (_requiresAuthorisation && operationRequiresAuthorisation)
+			if (!_requiresAuthorisation || operationIsSkippingAuthorisation || controllerActionDescriptor.IsRookFrameworkCoreAction())
 			{
-				operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
-				operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
-
-				var oAuthScheme = new OpenApiSecurityScheme
-				{
-					Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
-				};
-
-				operation.Security = new List<OpenApiSecurityRequirement>
-				{
-					new OpenApiSecurityRequirement
-					{
-						[ oAuthScheme ] = new List<string>()
-					}
-				};
+				return;
 			}
+
+			operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
+			operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
+
+			var oAuthScheme = new OpenApiSecurityScheme
+			{
+				Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+			};
+
+			operation.Security = new List<OpenApiSecurityRequirement>
+			{
+				new OpenApiSecurityRequirement
+				{
+					[ oAuthScheme ] = new List<string>()
+				}
+			};
 		}
 	}
 }

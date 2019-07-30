@@ -30,7 +30,7 @@ namespace Rook.Framework.Api.AspNetHttp
 			if (context.Resource is AuthorizationFilterContext mvcContext &&
 			    mvcContext.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
 			{
-				if (controllerActionDescriptor.ControllerTypeInfo.Assembly == Assembly.GetAssembly(typeof(Core.HttpServerAspNet.AspNetHttp)))
+				if (controllerActionDescriptor.IsRookFrameworkCoreAction())
 				{
 					succeed = true;
 				}
@@ -39,7 +39,7 @@ namespace Rook.Framework.Api.AspNetHttp
 					var activityAttribute = controllerActionDescriptor.MethodInfo.GetCustomAttributes<ActivityAttribute>().SingleOrDefault();
 					if (activityAttribute == null)
 					{
-						throw new InvalidOperationException($"{nameof(ActivityAttribute)} not found.");
+						return Task.CompletedTask;
 					}
 
 					var activityName = activityAttribute.ActivityName;

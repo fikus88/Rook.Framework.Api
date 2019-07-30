@@ -10,6 +10,7 @@ namespace test_api
 	{
 		[HttpGet]
 		[SwaggerTag("Test")]
+		[Activity("TestApi", SkipAuthorisation = true)]
 		public IActionResult Test()
 		{
 			return Ok("Test");
