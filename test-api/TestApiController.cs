@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Rook.Framework.Api.AspNetHttp;
 using Rook.Framework.Core.HttpServerAspNet;
 
@@ -20,12 +15,12 @@ namespace test_api
 			return Ok("Test");
 		}
 
-		[HttpGet("auth")]
+		[HttpGet("authenticatedactivity")]
 		[SwaggerTag("Test")]
-		[Activity("TestActivity")]
+		[Activity("AuthenticatedActivity")]
 		public IActionResult TestAuthenticated()
 		{
-			return Ok("Test");
+			return Ok("Authenticated activity was successful");
 		}
 	}
 }
