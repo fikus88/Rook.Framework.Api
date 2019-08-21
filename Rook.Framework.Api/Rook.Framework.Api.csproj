@@ -19,8 +19,8 @@
     <RepositoryType>Github</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>2019.8.2.21</AssemblyVersion>
-    <Version>2019.8.2.21</Version>
+    <AssemblyVersion>2019.8.21.22</AssemblyVersion>
+    <Version>2019.8.21.22</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
