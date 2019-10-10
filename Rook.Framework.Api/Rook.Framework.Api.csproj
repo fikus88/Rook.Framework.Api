@@ -20,7 +20,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyVersion>2019.10.10.30</AssemblyVersion>
-    <Version>2019.8.29.28</Version>
+    <Version>2019.10.10.30</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>full</DebugType>
