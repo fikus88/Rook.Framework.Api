@@ -6,10 +6,10 @@
     <Company>Rook Framework</Company>
     <Product>Rook.MicroService.Core.Api</Product>
     <Description>API microservice functionality for rook services</Description>
-	  <FileVersion>2019.10.11.32</FileVersion>
+	  <FileVersion>2019.10.15.33</FileVersion>
     <ProjectGuid>CFC5BCBD-B29F-499B-B003-E38B92EE4411</ProjectGuid>
     <Configurations>Debug;Release;Experimental</Configurations>
-    <PackageVersion>2019.10.11.32</PackageVersion>
+    <PackageVersion>2019.10.15.33</PackageVersion>
     <Title>Rook.Framework.Api</Title>
 		<PackageId>MAB.Rook.Framework.Api</PackageId>
     <PackageProjectUrl>https://github.com/rookframework/Rook.Documentation</PackageProjectUrl>
@@ -19,7 +19,7 @@
     <RepositoryType>Github</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>2019.10.11.32</AssemblyVersion>
+    <AssemblyVersion>2019.10.15.33</AssemblyVersion>
     <Version>2019.10.10.30</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="MAB.Rook.Framework.Core" Version="2019.10.11.68" />
+    <PackageReference Include="MAB.Rook.Framework.Core" Version="2019.10.15.70" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
   </ItemGroup>
 </Project>
