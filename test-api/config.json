@@ -6,6 +6,6 @@
   "Port": 8600,
   "UseStructureMap": true,
   "HttpServerType": "AspNetHttp",
-  "IdentityServerAddress": "http://localhost:5000",
+  "IdentityServerAddress": "http://auth.localhost",
   "IdentityServerRequireHttps": false 
 }
