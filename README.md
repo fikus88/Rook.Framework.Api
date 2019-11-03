@@ -6,10 +6,13 @@ APi Functionality for Rook Services
 
 
 ## Installation
+Install the nuget package
+Example:
 PM> Install-Package Rook.Framework.Api
 
 ## Usage
-https://github.com/rookframework/Rook.Documentation/wiki/Rook-Microservice-Project
+Read the documentation for a full description of how to use this package
+https://github.com/rookframework/Rook.Documentation/wiki
 
 ## Contributing
 Pull requests welcome
