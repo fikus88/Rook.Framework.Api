@@ -1,5 +1,5 @@
 # Rook.Framework.Api
-APi Functionality for Rook Services
+API Functionality for Rook Services
 
 [![Build status](https://travis-ci.org/rookframework/Rook.Framework.Api.svg?branch=master)](https://travis-ci.org/rookframework/Rook.Framework.Api)
 [![nuget](https://img.shields.io/nuget/v/Rook.Framework.Api.svg)](https://www.nuget.org/packages/Rook.Framework.Api/)
